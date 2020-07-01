@@ -172,7 +172,6 @@ export default class MazeRenderer {
 
     getWalls({coords, tile}) {
         return PassageDirection.getAllowedDirections().map(direction => {
-            if(coords.x === this._maze.getColumns() - 1 && coords.y === this._maze.getRows() - 1 && direction === Direction.RIGHT) return null;
             const passage = tile.getNeighbour(direction);
             if(passage.getDistance() !== Infinity) return;
             return this.getWallForDirection(tile, direction, coords);
