@@ -1,3 +1,4 @@
+import MinHeap from "./MinHeap";
 import {Direction} from "../model/PassageDirection";
 
 export default class AStar {
@@ -28,10 +29,20 @@ export default class AStar {
     }
 
     setup() {
-        const linearIndex = this._maze.coordinatesToLinear(this._start.x, this._start.y);
-        this._open = [linearIndex];
-        this._path = [];
         const tiles = this._maze.getTiles();
+        const linearIndex = this._maze.coordinatesToLinear(this._start.x, this._start.y);
+        const nodeComparator = (a, b) => { return a.priority < b.priority ? -1 : ( a.priority > b.priority ? 1 : 0) };
+        const nodePriorityChanger = (element, priority) => element.priority = priority;
+
+        this._open = new MinHeap(
+            [{index: linearIndex, priority: 0}],
+            nodeComparator,
+            nodePriorityChanger
+        );
+        this._openLookup = {linearIndex : true};
+
+
+        this._path = [];
         this._g = tiles.map((tile, index) =>  Infinity);
         this._f = tiles.map((tile, index) =>  Infinity);
         this._g[linearIndex] = 0;
@@ -39,16 +50,15 @@ export default class AStar {
     }
 
     run() {
-        while(this._open.length > 0) {
-            const currentIndex = this.getBestCandidateIndex();
-            const {coords, tile} = this._maze.getTiles()[currentIndex];
+        while(!this._open.isEmpty()) {
+            const {index} = this._open.pop();
+            this._openLookup[index] = false;
+
+            const {coords, tile} = this._maze.getTiles()[index];
 
             if(coords.x === this._end.x && coords.y === this._end.y) {
                 return;
             }
-
-
-            this._open = this._open.filter( element => element !== currentIndex);
 
             const neighbours = tile.getNeighbours()
                 .filter( ({direction, passage}) => {
@@ -56,15 +66,21 @@ export default class AStar {
                 });
 
             neighbours.forEach( ({direction, passage}) => {
-                const neighbourIndex = this.applyDirection(currentIndex, direction);
-                const gCandidate = this._g[currentIndex] + passage.getDistance();
+                const neighbourIndex = this.applyDirection(index, direction);
+                const gCandidate = this._g[index] + passage.getDistance();
                 if(gCandidate < this._g[neighbourIndex]) {
                     const neighbourCoords = this._maze.linearToCoordinate(neighbourIndex);
-                    this._path[neighbourIndex] = currentIndex;
+                    this._path[neighbourIndex] = index;
                     this._g[neighbourIndex] = gCandidate;
                     this._f[neighbourIndex] = this._g[neighbourIndex] + this._heuristic(neighbourCoords, this._end);
-                    if(!this._open.includes(neighbourIndex)) {
-                        this._open.push(neighbourIndex);
+                    if(!this._openLookup[neighbourIndex]) {
+                        this._open.push({
+                            index: neighbourIndex,
+                            priority : this._g[neighbourIndex]
+                        });
+                        this._openLookup[neighbourIndex] = true;
+                    } else {
+                        this._open.changePriority(neighbourIndex, this._g[neighbourIndex])
                     }
                 }
             })

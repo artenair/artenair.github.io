@@ -8,8 +8,16 @@ let maze;
 let mazeRenderer;
 let pathFinder;
 let path = [];
+let mouse;
+let cheese;
 
 const sketch = (s) => {
+
+    s.preload= () => {
+        mouse = s.loadImage("/dist/images/mouse.png");
+        cheese = s.loadImage("/dist/images/cheese.png");
+    }
+
     s.setup = () => {
         const side = Math.min(s.windowWidth, s.windowHeight);
         canvas = s.createCanvas(side, side);
@@ -21,18 +29,17 @@ const sketch = (s) => {
 
         pathFinder = new AStar(
             maze,
-            {x: 0, y:0},
-            {x: maze.getColumns() - 1, y: maze.getRows() -1},
+            {x: Math.floor(Math.random() * (maze.getColumns() - 1)), y:Math.floor(Math.random() * (maze.getRows() - 1))},
+            {x: Math.floor(Math.random() * (maze.getColumns() - 1)), y:Math.floor(Math.random() * (maze.getRows() - 1))},
             heuristic
         );
         pathFinder.setup();
         pathFinder.run();
         path = pathFinder.getPath();
-
     }
 
     s.draw = () => {
-        mazeRenderer.render(path)
+        mazeRenderer.render(path, mouse, cheese)
     }
 }
 

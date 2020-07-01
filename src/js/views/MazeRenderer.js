@@ -10,6 +10,8 @@ export default class MazeRenderer {
         const maxSequenceElements = Math.max(this._maze.getColumns(), this._maze.getRows());
         this._cellSide = Math.floor(this.getCanvasSmallSide() / (maxSequenceElements + 1));
         this._padding = Math.floor(this._cellSide / 2);
+        this._pathLimit = 0;
+        this._drawVersion = "nothing";
     }
 
     getCanvasSmallSide() {
@@ -19,11 +21,21 @@ export default class MazeRenderer {
         return this._canvasSmallSide;
     }
 
-    render( path ) {
+    render( path, mouse, cheese ) {
         this._engine.background("#FFF");
+
+        const startCoodinates = this._maze.linearToCoordinate(path[0]);
+        this._engine.noStroke();
+        this._engine.fill(250,0,200);
+        this._engine.square(
+            startCoodinates.x * this._cellSide + this._padding,
+            startCoodinates.y * this._cellSide + this._padding,
+            this._cellSide
+        );
+
         this._maze.getTiles().forEach((tileContainer, index) => {
             this._engine.noStroke();
-            this._engine.fill("#FFF");
+            this._engine.noFill();
             this._engine.square(
                 this._cellSide * tileContainer.coords.x + this._padding,
                 this._cellSide * tileContainer.coords.y + this._padding,
@@ -37,16 +49,34 @@ export default class MazeRenderer {
             });
         })
 
-        const pathLimit = Math.min(
-            path.length,
-            Math.floor(this._engine.frameCount)
+
+        if(this._engine.frameCount % 5 === 0) {
+            this._pathLimit = Math.min(path.length - 2, this._pathLimit + 1);
+            this._drawVersion = this.getDrawAction(
+                this._maze.linearToCoordinate(path[this._pathLimit]),
+                this._maze.linearToCoordinate(path[this._pathLimit + 1])
+            );
+        }
+
+
+        const mouseCoordinates = this._maze.linearToCoordinate(path[this._pathLimit]);
+        const nextMouseCoordinates = this._maze.linearToCoordinate(path[this._pathLimit + 1]);
+        const cheeseCoordinates = this._maze.linearToCoordinate(path[path.length - 1]);
+
+        this._engine.image(
+            cheese,
+            cheeseCoordinates.x * this._cellSide + this._padding,
+            cheeseCoordinates.y * this._cellSide + this._padding,
+            this._cellSide,
+            this._cellSide
         );
 
-        for(let i = 1; i < pathLimit; i++) {
+        for(let i = 1; i <= this._pathLimit; i++) {
             const startCoords = this._maze.linearToCoordinate(path[i - 1]);
             const endCoords = this._maze.linearToCoordinate(path[i]);
             this._engine.strokeWeight(Math.floor(this._padding / 2));
-            this._engine.stroke(255, 0, 200);
+            this._engine.strokeWeight(1);
+            this._engine.stroke(150);
             this._engine.line(
                 2 * this._padding + this._cellSide * startCoords.x,
                 2 * this._padding + this._cellSide * startCoords.y,
@@ -55,9 +85,89 @@ export default class MazeRenderer {
             )
         }
 
-        if(pathLimit === path.length) {
+        const shiftedMouseCoordinates = this.shiftMouse(
+            mouseCoordinates,
+            nextMouseCoordinates,
+            (this._engine.frameCount % 5) / 5
+        );
+
+        switch (this._drawVersion) {
+            case "nothing":
+                this._engine.push();
+                this._engine.imageMode(this._engine.CENTER);
+                this._engine.image(
+                    mouse,
+                    shiftedMouseCoordinates.x,
+                    shiftedMouseCoordinates.y,
+                    this._cellSide,
+                    this._cellSide
+                );
+                this._engine.pop();
+                break;
+            case "flip":
+                this._engine.push();
+                this._engine.translate(this._cellSide, 0)
+                this._engine.scale(-1,1);
+                this._engine.imageMode(this._engine.CENTER);
+                this._engine.image(
+                    mouse,
+                    - (shiftedMouseCoordinates.x - this._cellSide),
+                    shiftedMouseCoordinates.y,
+                    this._cellSide,
+                    this._cellSide
+                );
+                this._engine.pop();
+            break;
+            case "rotateUp":
+                this._engine.push();
+                this._engine.translate(
+                    shiftedMouseCoordinates.x,
+                    shiftedMouseCoordinates.y
+                );
+                this._engine.rotate(this._engine.HALF_PI);
+                this._engine.imageMode(this._engine.CENTER);
+                this._engine.image(
+                    mouse,
+                    0,
+                    0,
+                    this._cellSide,
+                    this._cellSide
+                );
+                this._engine.pop();
+            break;
+            case "rotateDown":
+                this._engine.push();
+                this._engine.translate(
+                    shiftedMouseCoordinates.x,
+                    shiftedMouseCoordinates.y
+                );
+                this._engine.rotate(-this._engine.HALF_PI);
+                this._engine.imageMode(this._engine.CENTER);
+                this._engine.image(
+                    mouse,
+                    0,
+                    0,
+                    this._cellSide,
+                    this._cellSide
+                );
+                this._engine.pop();
+            break;
+        }
+
+        if(this._pathLimit + 2 === path.length) {
             this._engine.noLoop();
         }
+    }
+
+    shiftMouse(start, end, shift) {
+        const difference = {
+            x: (end.x - start.x) * shift,
+            y: (end.y - start.y) * shift
+        };
+        return {
+            x: this._cellSide * (start.x + difference.x) + this._padding + Math.floor(this._cellSide / 2),
+            y: this._cellSide * (start.y + difference.y) + this._padding + Math.floor(this._cellSide / 2),
+        };
     }
 
     getWalls({coords, tile}) {
@@ -81,6 +191,27 @@ export default class MazeRenderer {
             case Direction.LEFT:
                 return new Line(coords.x, coords.y, coords.x, coords.y + 1, this._cellSide, this._padding);
         }
+    }
+
+    getDrawAction(start, end) {
+        const difference = {
+            x: end.x - start.x,
+            y: end.y - start.y
+        };
+
+        let action = "nothing";
+
+        if(difference.x > 0) {
+            action = "flip";
+        }
+
+        if(difference.y < 0) {
+            action = "rotateUp";
+        } else if(difference.y > 0) {
+            action = "rotateDown";
+        }
+
+        return action;
     }
 }
 
