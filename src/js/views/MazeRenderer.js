@@ -12,6 +12,7 @@ export default class MazeRenderer {
         this._padding = Math.floor(this._cellSide / 2);
         this._pathLimit = 0;
         this._drawVersion = "nothing";
+        this._framesPerMovement = 6;
     }
 
     getCanvasSmallSide() {
@@ -50,7 +51,7 @@ export default class MazeRenderer {
         })
 
 
-        if(this._engine.frameCount % 5 === 0) {
+        if(this._engine.frameCount % this._framesPerMovement === 0) {
             this._pathLimit = Math.min(path.length - 2, this._pathLimit + 1);
             this._drawVersion = this.getDrawAction(
                 this._maze.linearToCoordinate(path[this._pathLimit]),
@@ -88,7 +89,7 @@ export default class MazeRenderer {
         const shiftedMouseCoordinates = this.shiftMouse(
             mouseCoordinates,
             nextMouseCoordinates,
-            (this._engine.frameCount % 5) / 5
+            (this._engine.frameCount % this._framesPerMovement) / this._framesPerMovement
         );
 
         switch (this._drawVersion) {
