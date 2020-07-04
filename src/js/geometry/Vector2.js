@@ -71,4 +71,11 @@ export default class Vector2 {
             this.getXComponent() * sin + this.getYComponent() * cos
         )
     }
+
+    add(vector) {
+        return new Vector2(
+            this.getXComponent() + vector.getXComponent(),
+            this.getYComponent() + vector.getYComponent(),
+        )
+    }
 }

@@ -45,17 +45,7 @@ export default class Circle {
         return this._radius * 2;
     }
 
-    move(movement, minX = -Infinity, minY = -Infinity, maxX = Infinity, maxY = Infinity) {
-        const newCenter = movement.apply(this.getCenter());
-
-
-        if(newCenter.getX() < (minX + this.getRadius()) || newCenter.getX() > (maxX - this.getRadius())) {
-            movement = movement.flipX();
-        }
-
-        if(newCenter.getY() < (minY + this.getRadius()) || newCenter.getY() > (maxY - this.getRadius())) {
-            movement = movement.flipY()
-        }
+    move(movement) {
         this._center = movement.apply(this.getCenter());
         return movement;
     }

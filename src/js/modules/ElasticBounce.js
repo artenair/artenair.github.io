@@ -5,6 +5,7 @@ import Point from "../geometry/Point";
 import QuadMap from "../service/QuadMap";
 import Vector2 from "../geometry/Vector2";
 import Particle from "../model/Particle";
+import AcceleratingParticle from "../model/AcceleratingParticle";
 
 export default class ElasticBounce {
     run() {
@@ -24,12 +25,14 @@ export default class ElasticBounce {
         let minRadius = 5;
         let maxRadius = 25;
         let screen;
+        const gravity = new Vector2(0, 2);
+        const energyConservation = 0.5;
 
         const sketch = (s) => {
             s.setup = () => {
                 canvas = s.createCanvas(width,height);
                 canvas.parent(parent);
-                screen = new Rectangle(0, 0, width, height)
+                screen = new Rectangle(0, 0, width, height);
 
                 while(!tooLong && currentFillFactor < Math.min(fillFactor, maxFillFactor)) {
                     const skeleton = Circle.makeRandom(width, height, minRadius, maxRadius);
@@ -56,6 +59,7 @@ export default class ElasticBounce {
                         intersectionCount = 0;
                         particles.push(particle);
                         currentFillFactor = filledArea / fillArea;
+                        // tooLong = true;
                     } else {
                         tooLong = intersectionCount++ > 5
                     }
@@ -72,14 +76,14 @@ export default class ElasticBounce {
 
                 particles.map(
                     particle => {
-                        map.near(particle.getSkeleton().getCenter(), 2 * maxRadius).forEach(
-                            nearParticle => {
-                                if(nearParticle === particle) return;
-                                const newMovement = particle.collides(nearParticle);
-                                if(!newMovement) return;
-                                particle.setMovement(newMovement);
-                            }
-                        )
+                        if(!(particle instanceof AcceleratingParticle)) {
+                            map.near(particle.getSkeleton().getCenter(), 2 * maxRadius).forEach(
+                                nearParticle => {
+                                    if(nearParticle === particle) return;
+                                    particle.collides(nearParticle);
+                                }
+                            )
+                        }
                         particle.update(screen);
 
                         s.noStroke();
