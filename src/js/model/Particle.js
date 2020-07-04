@@ -60,7 +60,7 @@ export default class Particle {
 
         const v2 = new Vector2(
             (u2.getXComponent() * (m1 - m2) + u1.getXComponent() * 2 * m1) / (m1 + m2),
-            u1.getYComponent()
+            u2.getYComponent()
         )
 
         this.setMovement(v1.rotate(-theta));

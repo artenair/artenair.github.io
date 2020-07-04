@@ -33,12 +33,16 @@ export default class ElasticBounce {
 
                 while(!tooLong && currentFillFactor < Math.min(fillFactor, maxFillFactor)) {
                     const skeleton = Circle.makeRandom(width, height, minRadius, maxRadius);
+                    const red = Math.floor(Math.random() * 255);
+                    const green = Math.floor(Math.random() * 255);
+                    const blue = Math.floor(Math.random() * 255);
+
                     const particle = new Particle(
                         skeleton ,
-                        Vector2.random(3,3),
+                        Vector2.random(3, 5),
                         skeleton.getArea(),
-                        "#000"
-                    )
+                        `rgb(${red},${green},${blue})`
+                    );
 
                     let intersect = false;
                     let filledArea = particle.getSkeleton().getArea();
@@ -59,16 +63,13 @@ export default class ElasticBounce {
             }
 
             s.draw = () => {
-                s.background(255);
+                s.background(30);
 
-                const map = new QuadMap(new Point(0, 0), width, height, 4)
+                const map = new QuadMap(new Point(0, 0), width, height)
                 particles.forEach( particle => {
-                    particle.setColor("#000");
                     map.add(particle.getSkeleton().getCenter(), particle)
                 });
 
-                s.strokeWeight(1);
-                s.noFill();
                 particles.map(
                     particle => {
                         map.near(particle.getSkeleton().getCenter(), 2 * maxRadius).forEach(
@@ -81,7 +82,8 @@ export default class ElasticBounce {
                         )
                         particle.update(screen);
 
-                        s.stroke(particle.getColor())
+                        s.noStroke();
+                        s.fill(particle.getColor());
                         s.circle(
                             particle.getSkeleton().getCenter().getX(),
                             particle.getSkeleton().getCenter().getY(),

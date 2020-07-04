@@ -31,10 +31,13 @@ export default class Vector2 {
     }
 
 
-    static random(maxLength){
+    static random(minLength = 0, maxLength = Infinity){
+        const directionX = Math.random() > .5 ? 1 : -1;
+        const directionY = Math.random() > .5 ? 1 : -1;
+
         return new Vector2(
-            Math.random() * (maxLength * 2) - maxLength,
-            Math.random() * (maxLength * 2) - maxLength
+            (minLength + Math.random() * (maxLength - minLength)) * directionX,
+            (minLength + Math.random() * (maxLength - minLength)) * directionY
         )
     }
 

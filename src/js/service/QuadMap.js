@@ -4,7 +4,7 @@ import Circle from "../geometry/Circle";
 
 export default class QuadMap {
 
-    constructor(origin, width, height, capacity) {
+    constructor(origin, width, height, capacity = 1) {
         this._boundaries = new Rectangle(
             Math.round(origin.getX()),
             Math.round(origin.getY()),
