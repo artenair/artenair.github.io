@@ -27,6 +27,10 @@ export default class ElasticBounce {
         let screen;
         const gravity = new Vector2(0, 2);
         const energyConservation = 0.5;
+        const clickRadius = Math.floor(Math.max(width, height) / 5);
+        const minClickAcceleration = 2;
+        const maxClickAcceleration = 5;
+        const clickQueue = [];
 
         const sketch = (s) => {
             s.setup = () => {
@@ -59,20 +63,45 @@ export default class ElasticBounce {
                         intersectionCount = 0;
                         particles.push(particle);
                         currentFillFactor = filledArea / fillArea;
-                        // tooLong = true;
                     } else {
                         tooLong = intersectionCount++ > 5
                     }
                 }
             }
 
+            s.mouseClicked = (event) => {
+                clickQueue.push(new Point(s.mouseX, s.mouseY));
+            }
+
             s.draw = () => {
                 s.background(30);
-
-                const map = new QuadMap(new Point(0, 0), width, height)
+                const map = new QuadMap(new Point(0, 0), width, height, 4);
                 particles.forEach( particle => {
                     map.add(particle.getSkeleton().getCenter(), particle)
                 });
+
+                const click = clickQueue.shift();
+
+                if(click) {
+                    map.near(click, clickRadius).map(
+                        particle => {
+                            const cX = particle.getSkeleton().getCenter().getX();
+                            const cY = particle.getSkeleton().getCenter().getY();
+                            const dX = cX - click.getX();
+                            const dY = cY - click.getY()
+
+                            const acceleration = new Vector2(
+                                s.map(Math.abs(dX) / particle.getMass(), 0, clickRadius, minClickAcceleration, maxClickAcceleration) * dX / Math.abs(dX),
+                                s.map(Math.abs(dY) / particle.getMass(), 0, clickRadius, minClickAcceleration, maxClickAcceleration) * dY / Math.abs(dY)
+                            )
+
+                            particle.setMovement(
+                                particle.getMovement().add(acceleration)
+                            )
+
+                        }
+                    )
+                }
 
                 particles.map(
                     particle => {
@@ -95,8 +124,6 @@ export default class ElasticBounce {
                         );
                     }
                 )
-
-
             }
         }
         const sketchInstance = new p5(sketch);
