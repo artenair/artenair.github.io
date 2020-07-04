@@ -1,34 +1,81 @@
-<html lang="it">
-    <head>
-        <title>Maze solver</title>
-        <script async src="dist/js/app.js"></script>
-        <style>
-            html, body {
-                padding: 0;
-                margin: 0;
-                width: 100%;
-                min-height: 100%;
-                height: 100%;
-            }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
 
-            body {
-                display: flex;
-                flex-flow: column nowrap;
-                justify-content: center;
-                align-items: center;
-            }
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
 
-            section {
-                width: 100%;
-                height: 100%;
-                display: flex;
-                flex-flow: column nowrap;
-                justify-content: center;
-                align-items: center;
-            }
-        </style>
-    </head>
-    <body>
-        <section id="mazeRunner"></section>
-    </body>
+    <style>
+        html, body {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            min-height: 100%;
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-flow: column nowrap;
+            justify-content: flex-start;
+            align-items: center;
+            background-color: #DEDEDE;
+        }
+
+        ul {
+            display: flex;
+            flex-flow: column nowrap;
+            border: 1px solid #BEBEBE;
+            background-color: white;
+            border-radius: 5px;
+            width: 70%;
+            list-style: none;
+            padding: 0;
+            margin-top: 10rem;
+        }
+
+        ul li {
+            font-size: 3rem;
+            font-family: "Poppins", sans-serif;
+            padding: 0.25em 0.5em;
+            display: flex;
+            line-height: 100%;
+        }
+
+        ul li:nth-child(even) {
+            background-color: #CECECE;
+        }
+
+        ul li a {
+            text-decoration: none;
+            color: black;
+            flex-flow: column;
+            height: 100%;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        ul li a::after {
+            content: " ";
+            display: block;
+            width: 100%;
+            height: 3px;
+            background-color: #333;
+            transform: translateX(calc(1em - 100%));
+            transition: 0.3s transform ease;
+        }
+
+        ul li a:hover::after {
+            transform: translateX(0);
+        }
+
+    </style>
+</head>
+<body>
+    <ul>
+        <li><a href="./pages/maze-runner.html">Maze runner</a></li>
+        <li><a href="./pages/elastic-bounce.html">Elastic bounce</a></li>
+    </ul>
+</body>
 </html>
