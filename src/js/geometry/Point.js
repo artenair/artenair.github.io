@@ -26,4 +26,11 @@ export default class Point {
             Math.pow(this.getY() - point.getY(), 2)
         )
     }
+
+    getAngleBetween(focus, radiants = false) {
+        const delta_x = focus.getX() - this.getX();
+        const delta_y = focus.getY() - this.getY();
+        const rads = Math.atan2(delta_y, delta_x);
+        return  radiants ? rads : rads * 180 / Math.PI;
+    }
 }

@@ -78,4 +78,8 @@ export default class Vector2 {
             this.getYComponent() + vector.getYComponent(),
         )
     }
+
+    getPerpendicular() {
+        return new Vector2(-this.getYComponent(), this.getXComponent());
+    }
 }
