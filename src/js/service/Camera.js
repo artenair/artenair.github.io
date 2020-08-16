@@ -155,7 +155,6 @@ export default class Camera {
                 Math.sin(iterationAngle)
             ));
         }
-        console.log(rays.length);
         return rays;
     }
 }
