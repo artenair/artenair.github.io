@@ -10,6 +10,14 @@ export default class MinHeap {
         return this._data.length === 0;
     }
 
+    getDataAsArray() {
+        return this._data.map( (element) => {
+            let clone = {...element};
+            delete clone.currentIndex;
+            return clone;
+        });
+    }
+
     push(element) {
         this._data.push(element);
         let index = this._data.length - 1;

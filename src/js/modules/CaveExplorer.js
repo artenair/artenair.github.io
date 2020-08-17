@@ -9,19 +9,22 @@ import NoiseGenerator from "../service/NoiseGenerator";
 import MeshGenerator from "../service/MeshGenerator";
 import MeshFromMarchingSquares from "../service/MeshGenerator/MeshFromMarchingSquares";
 import MeshRenderer from "../views/MeshRenderer";
+import RoomConnector from "../service/CaveExplorer/RoomConnector";
 
 export default class CaveExplorer {
     run() {
         const parent = document.querySelector("#caveExplorer");
         if(!parent) return;
-        let canvas, mapGenerator, map, camera, renderer, cameraRenderer, noiseGenerator, mesh;
+        let canvas, mapGenerator, map, camera, renderer, cameraRenderer;
+        let noiseGenerator, mesh, graphConnections;
         const meshStrategy = new MeshFromMarchingSquares();
         const meshGenerator = new MeshGenerator();
         const bounds = [];
         const width = Math.floor(parent.clientWidth);
         const height = Math.floor(parent.clientHeight);
         const resolution = 100;
-        const fillPercent = .45;
+        const fillPercent = .5;
+        const smoothing = 4;
         const minSide = Math.min(width, height);
         const cellSide = Math.max(Math.floor(minSide / resolution), 5);
         const wCells = Math.floor( width / cellSide);
@@ -32,53 +35,19 @@ export default class CaveExplorer {
         const sketch = (s) => {
             s.setup = () => {
                 canvas = s.createCanvas(width,height);
+                renderer = new MeshRenderer(canvas, s, pl, pt);
                 canvas.parent(parent);
                 mapGenerator = new MapGenerator(
                     Math.floor(width / cellSide) + 1,
                     Math.floor(height / cellSide) + 1,
                     fillPercent
                 );
-                noiseGenerator = new NoiseGenerator();
-                map = mapGenerator.generate(noiseGenerator, 3);
+                noiseGenerator = new NoiseGenerator(s, 45);
+                map = mapGenerator.generate(noiseGenerator, smoothing);
+                const roomConnector = new RoomConnector(mapGenerator.TILE_EMPTY);
+                graphConnections = roomConnector.connect(map);
 
-                const TILE_FILLED = mapGenerator.TILE_FILLED;
-                /*
-                map.forEach((map, x, y) => {
-                    if(map.get(x, y) === TILE_FILLED) return;
-                    if(map.get(x+1, y) === TILE_FILLED) {
-                        bounds.push(
-                            new Edge(
-                                new Point((x+1) * cellSide + pl, y * cellSide + pt),
-                                new Point((x+1) * cellSide + pl, (y+1) * cellSide + pt)
-                            )
-                        )
-                    }
-                    if(map.get(x-1, y) === TILE_FILLED) {
-                        bounds.push(
-                            new Edge(
-                                new Point(x * cellSide + pl, y * cellSide + pt),
-                                new Point(x * cellSide +pl, (y+1) * cellSide + pt)
-                            )
-                        )
-                    }
-                    if(map.get(x, y - 1) === TILE_FILLED) {
-                        bounds.push(
-                            new Edge(
-                                new Point(x * cellSide + pl, y * cellSide + pt),
-                                new Point( (x+1) * cellSide + pl, y * cellSide + pt)
-                            )
-                        )
-                    }
-                    if(map.get(x, y+1) === TILE_FILLED) {
-                        bounds.push(
-                            new Edge(
-                                new Point(x * cellSide + pl, (y+1) * cellSide + pt),
-                                new Point((x+1) * cellSide + pl, (y+1) * cellSide + pt)
-                            )
-                        )
-                    }
-                });
-                */
+
                 meshStrategy.setSide(cellSide).setSource(map);
                 meshGenerator.setStrategy(meshStrategy);
                 mesh = meshGenerator.generate();
@@ -101,6 +70,7 @@ export default class CaveExplorer {
                     });
 
 
+                /*
                 let xCamera, yCamera;
                 do {
                     xCamera = Math.floor(Math.random() * wCells);
@@ -112,17 +82,44 @@ export default class CaveExplorer {
                     45
                 );
                 camera.setMovementController(new StrifingMovementController(s))
-                renderer = new MeshRenderer(canvas, s, pl, pt);
                 cameraRenderer = new RayCastingTopDownRenderer(canvas, s, false);
+                 */
+
             }
 
             s.draw = () => {
                 s.background(30);
-                camera.move();
-
                 s.fill(70);
                 renderer.render(mesh);
-                cameraRenderer.render(camera.getPosition(), camera.getRays(), bounds);
+                s.graphRenderer(graphConnections, "red", "red");
+                if(camera) {
+                    camera.move();
+                    cameraRenderer.render(camera.getPosition(), camera.getRays(), bounds);
+                }
+            }
+
+            s.graphRenderer = (graph, nodeColor, edgeColor) => {
+                s.strokeWeight(2);
+                s.stroke(edgeColor);
+                const edges = graph.getEdges();
+                for(let originId in edges) {
+                    if (!edges.hasOwnProperty(originId)) continue;
+                    edges[originId].getDataAsArray().forEach( ({origin, destination, weight}) => {
+                        const originCenter = origin.node.getCenter();
+                        const destinationCenter = destination.node.getCenter();
+
+                        s.line(originCenter.getX(), originCenter.getY(), destinationCenter.getX(), destinationCenter.getY());
+                    })
+                }
+
+                s.noStroke();
+                s.fill(nodeColor);
+                const nodes = graph.getNodes();
+                for(let nodeId in nodes) {
+                    if(!nodes.hasOwnProperty(nodeId)) continue;
+                    const node = nodes[nodeId].node;
+                    s.circle(node.getX(), node.getY(), 50)
+                }
             }
         }
         const sketchInstance = new p5(sketch);
