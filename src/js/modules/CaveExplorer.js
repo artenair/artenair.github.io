@@ -10,13 +10,14 @@ import MeshGenerator from "../service/MeshGenerator";
 import MeshFromMarchingSquares from "../service/MeshGenerator/MeshFromMarchingSquares";
 import MeshRenderer from "../views/MeshRenderer";
 import RoomConnector from "../service/CaveExplorer/RoomConnector";
+import RoomDetector from "../service/CaveExplorer/RoomDetector";
 
 export default class CaveExplorer {
     run() {
         const parent = document.querySelector("#caveExplorer");
         if(!parent) return;
         let canvas, mapGenerator, map, camera, renderer, cameraRenderer;
-        let noiseGenerator, mesh, graphConnections;
+        let noiseGenerator, mesh, graphConnections, roomDetector;
         const meshStrategy = new MeshFromMarchingSquares();
         const meshGenerator = new MeshGenerator();
         const bounds = [];
@@ -31,6 +32,8 @@ export default class CaveExplorer {
         const hCells = Math.floor( height / cellSide);
         const pl = Math.floor((width - cellSide * wCells) / 2);
         const pt = Math.floor((height - cellSide * hCells) / 2);
+        let rooms = null;
+        let passages = null;
 
         const sketch = (s) => {
             s.setup = () => {
@@ -44,9 +47,11 @@ export default class CaveExplorer {
                 );
                 noiseGenerator = new NoiseGenerator(s, 45);
                 map = mapGenerator.generate(noiseGenerator, smoothing);
+                roomDetector = new RoomDetector(mapGenerator.TILE_EMPTY);
+                rooms = roomDetector.get(map);
+
                 const roomConnector = new RoomConnector(mapGenerator.TILE_EMPTY);
                 graphConnections = roomConnector.connect(map);
-
 
                 meshStrategy.setSide(cellSide).setSource(map);
                 meshGenerator.setStrategy(meshStrategy);
@@ -91,7 +96,53 @@ export default class CaveExplorer {
                 s.background(30);
                 s.fill(70);
                 renderer.render(mesh);
+
+                /**
+                s.strokeWeight(1);
+                s.stroke(255,255,255);
+                map.forEach( (source, x, y) => {
+                    const value = source.get(x, y);
+                    const color = (value === 0) ? 255 : (value === 1 ?  0 : "red");
+                    s.fill(color);
+                    s.square(
+                        pl + x * cellSide,
+                        pt + y * cellSide,
+                        cellSide
+                    );
+                });
+
+                const colors = ["blue"];
+
+                rooms.map( (room, roomIndex) => {
+                    const tl = room.getTopLeft();
+                    const bl = room.getBottomRight();
+                    const center = room.getCenter();
+                    const centerMultiplier = 0.7;
+                    const ap = (cellSide - (cellSide * centerMultiplier)) / 2;
+                    const color = colors[roomIndex % colors.length];
+
+                    s.noFill();
+                    s.strokeWeight(1);
+                    s.stroke(color);
+                    s.rect(
+                        pl + tl.getX() * cellSide,
+                        pt + tl.getY() * cellSide,
+                        (bl.getX() - tl.getX() + 1) * cellSide,
+                        (bl.getY() - tl.getY() + 1) * cellSide
+                    );
+
+                    s.noStroke()
+                    s.fill(color);
+                    s.square(
+                        ap + pl + center.getX() * cellSide,
+                        ap + pt + center.getY() * cellSide,
+                        cellSide * centerMultiplier
+                    )
+                });
+                 */
+
                 s.graphRenderer(graphConnections, "red", "red");
+
                 if(camera) {
                     camera.move();
                     cameraRenderer.render(camera.getPosition(), camera.getRays(), bounds);
@@ -108,7 +159,12 @@ export default class CaveExplorer {
                         const originCenter = origin.node.getCenter();
                         const destinationCenter = destination.node.getCenter();
 
-                        s.line(originCenter.getX(), originCenter.getY(), destinationCenter.getX(), destinationCenter.getY());
+                        s.line(
+                            pl + originCenter.getX() * cellSide,
+                            pt + originCenter.getY() * cellSide,
+                            pl + destinationCenter.getX() * cellSide,
+                            pt + destinationCenter.getY()  * cellSide
+                        );
                     })
                 }
 
@@ -118,7 +174,13 @@ export default class CaveExplorer {
                 for(let nodeId in nodes) {
                     if(!nodes.hasOwnProperty(nodeId)) continue;
                     const node = nodes[nodeId].node;
-                    s.circle(node.getX(), node.getY(), 50)
+                    const multiplier = 1;
+                    const smallerPadding = (cellSide - (cellSide * multiplier)) / 2;
+                    s.circle(
+                        smallerPadding + pl + node.getCenter().getX() * cellSide,
+                        smallerPadding + pt + node.getCenter().getY() * cellSide,
+                        cellSide * multiplier
+                    )
                 }
             }
         }

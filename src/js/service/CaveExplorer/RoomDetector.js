@@ -19,9 +19,9 @@ export default class RoomDetector {
             if(map.get(x, y) !== this._marker) return;
             if(processed.get(x, y)) return;
             const room = this._generateRoomFrom(map, x, y);
-            room.getTiles().forEach( tile =>
-                processed.set(tile.getX(), tile.getY(), true)
-            );
+            room.getTiles().forEach( tile => {
+                processed.set(tile.getX(), tile.getY(), true);
+            });
             rooms.push(room);
         });
         return rooms;

@@ -16,13 +16,13 @@ export default class CaveRoom {
         if(tile.getX() < this._topLeft.getX()) {
             this._topLeft.setX(tile.getX());
         }
-        if(tile.getX() + 1 > this._bottomRight.getX()) {
-            this._bottomRight.setX(tile.getX() + 1);
+        if(tile.getX() > this._bottomRight.getX()) {
+            this._bottomRight.setX(tile.getX());
         }
         if(tile.getY() < this._topLeft.getY()) {
             this._topLeft.setY(tile.getY());
         }
-        if(tile.getY() + 1 > this._bottomRight.getY()) {
+        if(tile.getY() > this._bottomRight.getY()) {
             this._bottomRight.setY(tile.getY());
         }
 
@@ -37,12 +37,33 @@ export default class CaveRoom {
         return this._tiles.length;
     }
 
-    getCenter() {
+    getMathematicalCenter() {
         if(this._tiles.length === 0) return null;
         return new Point(
-            this._bottomRight.getX() - this._topLeft.getX(),
-            this._bottomRight.getY() - this._topLeft.getY(),
+            this._topLeft.getX() + Math.ceil((this._bottomRight.getX() - this._topLeft.getX()) /2),
+            this._topLeft.getY() + Math.ceil((this._bottomRight.getY() - this._topLeft.getY()) / 2),
         )
+    }
+
+    getCenter() {
+        const mathematicalCenter = this.getMathematicalCenter();
+        const squaredDistance = (a, b) => {
+            return Math.pow(a.getX() - b.getX(), 2) + Math.pow(a.getY() - b.getY(), 2);
+        };
+        return this.getTiles().reduce((closestToCenter, point)  => {
+            if(!closestToCenter) return point;
+            const bestDistance =  squaredDistance(closestToCenter, mathematicalCenter);
+            const distance = squaredDistance(point, mathematicalCenter);
+            return bestDistance < distance ? closestToCenter : point;
+        }, null).getPosition();
+    }
+
+    getTopLeft() {
+        return this._topLeft;
+    }
+
+    getBottomRight() {
+        return this._bottomRight;
     }
 
 }

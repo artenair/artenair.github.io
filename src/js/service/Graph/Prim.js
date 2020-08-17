@@ -11,7 +11,8 @@ export default class Prim extends MinimumSpanningTree{
     get(graph) {
         const spanningTree = new Graph();
         if(graph.getNodes().length === 0) return spanningTree;
-        const {id, node} = graph.getNodes()[0];
+        const firstElement = Object.keys(graph.getNodes())[0];
+        const {id, node} = graph.getNodes()[firstElement];
         const graphEdges = graph.getEdges();
 
         const edges = new MinHeap(graphEdges[id].getDataAsArray(), graph.edgeComparator);

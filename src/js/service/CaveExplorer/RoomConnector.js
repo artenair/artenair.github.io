@@ -33,7 +33,38 @@ export default class RoomConnector {
                 graph.addEdge(roomAId, roomBId, edgeWeight);
             })
         });
-        return graph;
+
+        const connections = (new Prim()).get(graph);
+        const nodes = connections.getNodes();
+        const edges = connections.getEdges();
+        for(let roomId in edges) {
+            if(!edges.hasOwnProperty(roomId)) continue;
+            const heap = edges[roomId];
+            heap.getDataAsArray().forEach( ({origin, destination}) => {
+                const posA = origin.node.getCenter();
+                const posB = destination.node.getCenter();
+                const leftmostNode = posA.getX() <= posB.getX() ? posA : posB;
+                const rightmostNode = posA.getX() <= posB.getX() ? posB : posA;
+                const dx = rightmostNode.getX()  - leftmostNode.getX();
+                const dy = rightmostNode.getY() - leftmostNode.getY();
+                const yIncrement = dy / dx;
+                const xIncrement = dx / dy;
+                if(yIncrement > xIncrement) {
+                    for(let x = 0; x < dx; x++) {
+                        const y = Math.round(leftmostNode.getY() + (x * yIncrement));
+                        // map.set(leftmostNode.getX() + x, y, 0);
+                    }
+                } else {
+                    for(let y = 0; y < dy; y++) {
+                        const x = Math.round(leftmostNode.getX() + (y * xIncrement));
+                        // map.set(x, y + leftmostNode.getY(), 0);
+                    }
+                }
+
+            })
+        }
+
+        return connections;
     }
 
     _getRoomId(room) {
