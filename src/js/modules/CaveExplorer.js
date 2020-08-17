@@ -2,18 +2,21 @@ import p5 from "p5";
 import MapGenerator from "../service/CaveExplorer/MapGenerator";
 import Camera from "../service/Camera";
 import Point from "../geometry/Point";
-import RayCastingFake3DRenderer from "../views/RayCastingFake3DRenderer";
 import Edge from "../geometry/Edge";
 import RayCastingTopDownRenderer from "../views/RayCastingTopDownRenderer";
 import StrifingMovementController from "../controller/StrifingMovementController";
 import NoiseGenerator from "../service/NoiseGenerator";
-import TurningMovementController from "../controller/TurningMovementController";
+import MeshGenerator from "../service/MeshGenerator";
+import MeshFromMarchingSquares from "../service/MeshGenerator/MeshFromMarchingSquares";
+import MeshRenderer from "../views/MeshRenderer";
 
 export default class CaveExplorer {
     run() {
         const parent = document.querySelector("#caveExplorer");
         if(!parent) return;
-        let canvas, mapGenerator, map, camera, renderer, noiseGenerator;
+        let canvas, mapGenerator, map, camera, renderer, cameraRenderer, noiseGenerator, mesh;
+        const meshStrategy = new MeshFromMarchingSquares();
+        const meshGenerator = new MeshGenerator();
         const bounds = [];
         const width = Math.floor(parent.clientWidth);
         const height = Math.floor(parent.clientHeight);
@@ -31,14 +34,15 @@ export default class CaveExplorer {
                 canvas = s.createCanvas(width,height);
                 canvas.parent(parent);
                 mapGenerator = new MapGenerator(
-                    Math.floor(width / cellSide),
-                    Math.floor(height / cellSide),
+                    Math.floor(width / cellSide) + 1,
+                    Math.floor(height / cellSide) + 1,
                     fillPercent
                 );
                 noiseGenerator = new NoiseGenerator();
-                map = mapGenerator.generate(noiseGenerator, 6);
+                map = mapGenerator.generate(noiseGenerator, 3);
+
                 const TILE_FILLED = mapGenerator.TILE_FILLED;
-                const TILE_EMPTY = mapGenerator.TILE_EMPTY;
+                /*
                 map.forEach((map, x, y) => {
                     if(map.get(x, y) === TILE_FILLED) return;
                     if(map.get(x+1, y) === TILE_FILLED) {
@@ -74,6 +78,28 @@ export default class CaveExplorer {
                         )
                     }
                 });
+                */
+                meshStrategy.setSide(cellSide).setSource(map);
+                meshGenerator.setStrategy(meshStrategy);
+                mesh = meshGenerator.generate();
+                meshStrategy
+                    .getPolygonsWithConfiguration()
+                    .map( ({polygon, configuration}) => {
+                        if(configuration === 15) return null;
+                        return polygon;
+                    })
+                    .filter( polygon => !!polygon )
+                    .map( polygon => {
+                        const vertices = polygon.getVertices();
+                        for(let i = 1; i < vertices.length; i++) {
+                            bounds.push(new Edge(vertices[i - 1], vertices[i]));
+                        }
+                        bounds.push(new Edge(
+                            vertices[vertices.length - 1],
+                            vertices[0],
+                        ))
+                    });
+
 
                 let xCamera, yCamera;
                 do {
@@ -86,26 +112,17 @@ export default class CaveExplorer {
                     45
                 );
                 camera.setMovementController(new StrifingMovementController(s))
-                renderer = new RayCastingTopDownRenderer(canvas, s);
+                renderer = new MeshRenderer(canvas, s, pl, pt);
+                cameraRenderer = new RayCastingTopDownRenderer(canvas, s, false);
             }
 
             s.draw = () => {
                 s.background(30);
-                s.noStroke();
                 camera.move();
 
                 s.fill(70);
-                s.noStroke();
-                map.forEach((map, x, y) => {
-                    if(map.get(x, y) === mapGenerator.TILE_EMPTY) return;
-                    s.square(
-                        x * cellSide + pl,
-                        y * cellSide + pt,
-                        cellSide
-                    )
-                });
-
-                renderer.render(camera.getPosition(), camera.getRays(), bounds);
+                renderer.render(mesh);
+                cameraRenderer.render(camera.getPosition(), camera.getRays(), bounds);
             }
         }
         const sketchInstance = new p5(sketch);
