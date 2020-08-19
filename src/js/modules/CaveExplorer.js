@@ -52,21 +52,9 @@ export default class CaveExplorer {
                 meshGenerator.setStrategy(meshStrategy);
                 mesh = meshGenerator.generate();
                 meshStrategy
-                    .getPolygonsWithConfiguration()
-                    .map( ({polygon, configuration}) => {
-                        if(configuration === 15) return null;
-                        return polygon;
-                    })
-                    .filter( polygon => !!polygon )
-                    .map( polygon => {
-                        const vertices = polygon.getVertices();
-                        for(let i = 1; i < vertices.length; i++) {
-                            bounds.push(new Edge(vertices[i - 1], vertices[i]));
-                        }
-                        bounds.push(new Edge(
-                            vertices[vertices.length - 1],
-                            vertices[0],
-                        ))
+                    .getExternalEdges()
+                    .forEach( edge => {
+                        bounds.push(edge);
                     });
 
                 let xCamera, yCamera;

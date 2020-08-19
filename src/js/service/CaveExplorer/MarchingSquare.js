@@ -1,5 +1,6 @@
 import ControlNode from "./ControlNode"
 import Polygon from "../Mesh/Polygon";
+import Edge from "../../geometry/Edge";
 
 
 export default class MarchingSquare {
@@ -220,6 +221,94 @@ export default class MarchingSquare {
 
             default:
                 return null;
+        }
+    }
+
+
+    /**
+     * return {Edge[]}
+     */
+    getExternalBounds() {
+        switch (this.getConfiguration()) {
+            case 0:
+                return [];
+
+            // One point active configuration
+            case 1:
+                return [
+                    new Edge(this._left.getPosition(), this._bottom.getPosition())
+                ];
+            case 2:
+                return [
+                    new Edge(this._bottom.getPosition(), this._right.getPosition())
+                ];
+            case 4:
+                return [
+                    new Edge(this._right.getPosition(), this._top.getPosition())
+                ];
+            case 8:
+                return [
+                    new Edge(this._top.getPosition(), this._left.getPosition())
+                ];
+
+            case 3:
+                return [
+                    new Edge(this._left.getPosition(), this._right.getPosition())
+                ];
+
+            case 6:
+                return [
+                    new Edge(this._top.getPosition(), this._bottom.getPosition())
+                ];
+
+            case 9:
+                return [
+                    new Edge(this._top.getPosition(), this._bottom.getPosition())
+                ];
+
+            case 12:
+                return [
+                    new Edge(this._left.getPosition(), this._right.getPosition())
+                ];
+
+            case 5:
+                return [
+                    new Edge(this._left.getPosition(), this._top.getPosition()),
+                    new Edge(this._bottom.getPosition(), this._right.getPosition())
+                ];
+
+            case 10:
+                return [
+                    new Edge(this._left.getPosition(), this._bottom.getPosition()),
+                    new Edge(this._right.getPosition(), this._top.getPosition())
+                ];
+
+            // Three point cases
+            case 7:
+                return [
+                    new Edge(this._left.getPosition(), this._top.getPosition()),
+                ];
+
+            case 11:
+                return [
+                    new Edge(this._top.getPosition(), this._right.getPosition())
+                ];
+
+            case 13:
+                return [
+                    new Edge(this._bottom.getPosition(), this._right.getPosition())
+                ];
+
+            case 14:
+                return [
+                    new Edge(this._bottom.getPosition(), this._left.getPosition())
+                ];
+
+            case 15:
+                return [];
+
+            default:
+                return [];
         }
     }
 

@@ -16,18 +16,18 @@ export default class MeshFromMarchingSquares extends MeshGeneratorInterface{
         super();
         this._source = source;
         this._side = side;
-        this._polygonsWithConfiguration = [];
+        this._externalEdges = [];
         this._squares = [];
     }
 
     /**
      * @return {object[]}
      */
-    getPolygonsWithConfiguration() {
-        if(!this._polygonsWithConfiguration) {
+    getExternalEdges() {
+        if(!this._externalEdges) {
             this.generate();
         }
-        return this._polygonsWithConfiguration;
+        return this._externalEdges;
     }
 
     /**
@@ -79,11 +79,12 @@ export default class MeshFromMarchingSquares extends MeshGeneratorInterface{
                 controlNodes.get(x, y + 1)
             );
             squares.set(x, y,marchingSquare);
-            const configuration = marchingSquare.getConfiguration();
             const polygon = marchingSquare.getPolygon();
             if(!polygon) return;
             polygons.push(polygon);
-            this._polygonsWithConfiguration.push({polygon, configuration});
+            marchingSquare.getExternalBounds().forEach(edge => {
+                this._externalEdges.push(edge);
+            });
         });
         this._squares = squares;
         return new Mesh(polygons);
