@@ -35,7 +35,8 @@ export default class RoomDetector {
         enqueued.set(x, y, true);
         while(queue.length) {
             const candidate = queue.shift();
-            room.addTile(candidate);
+            const isEdge = this._candidateIsEdge(candidate, map)
+            room.addTile(candidate, isEdge);
             candidate.getAdjacentPositions().forEach( position => {
                 const x = position.getX();
                 const y = position.getY();
@@ -49,4 +50,19 @@ export default class RoomDetector {
         }
         return room;
     }
+
+    _candidateIsEdge(candidate, map) {
+        const x = candidate.getX();
+        const y = candidate.getY();
+        const neighbourValues = [
+            map.get(x, y - 1),
+            map.get(x + 1, y),
+            map.get(x, y - 1),
+            map.get(x - 1, y)
+        ];
+        return neighbourValues.reduce((isEdge, neighbourValue) => {
+            return isEdge || (neighbourValue !== null && neighbourValue !== this._marker);
+        }, false);
+    }
+
 }

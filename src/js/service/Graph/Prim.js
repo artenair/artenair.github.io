@@ -22,7 +22,7 @@ export default class Prim extends MinimumSpanningTree{
 
         while(spanningTree.getSize() < graph.getSize()) {
             const edge = edges.pop();
-            const {origin, destination, weight} = edge;
+            const {origin, destination, weight, additionalInfo} = edge;
             if(insertedLookup[origin.id] &&  insertedLookup[destination.id]) continue;
             if(!insertedLookup[origin.id] &&  !insertedLookup[destination.id]) continue;
             if(!insertedLookup[origin.id]) {
@@ -35,7 +35,7 @@ export default class Prim extends MinimumSpanningTree{
                 spanningTree.addNode(destination.id, destination.node);
                 graphEdges[destination.id].getDataAsArray().forEach( (edge) => { edges.push(edge) });
             }
-            spanningTree.addEdge(origin.id, destination.id, weight);
+            spanningTree.addEdge(origin.id, destination.id, weight, additionalInfo);
         }
         return spanningTree;
     }

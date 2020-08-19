@@ -4,11 +4,12 @@ export default class CaveRoom {
 
     constructor() {
         this._tiles = [];
+        this._edges = [];
         this._topLeft = null;
         this._bottomRight = null;
     }
 
-    addTile(tile) {
+    addTile(tile, isEdge) {
         if(this._tiles.length === 0) {
             this._topLeft = new Point(tile.getX(), tile.getY());
             this._bottomRight = new Point(tile.getX(), tile.getY());
@@ -27,10 +28,17 @@ export default class CaveRoom {
         }
 
         this._tiles.push(tile);
+        if(isEdge) {
+            this._edges.push(tile);
+        }
     }
 
     getTiles() {
         return this._tiles;
+    }
+
+    getEdges() {
+        return this._edges;
     }
 
     getSize() {

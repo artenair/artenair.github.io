@@ -155,9 +155,15 @@ export default class CaveExplorer {
                 const edges = graph.getEdges();
                 for(let originId in edges) {
                     if (!edges.hasOwnProperty(originId)) continue;
-                    edges[originId].getDataAsArray().forEach( ({origin, destination, weight}) => {
-                        const originCenter = origin.node.getCenter();
-                        const destinationCenter = destination.node.getCenter();
+                    edges[originId].getDataAsArray().forEach( ({origin, destination, additionalInfo}) => {
+                        const originCenter = new Point(
+                            additionalInfo.origin.getX(),
+                            additionalInfo.origin.getY()
+                        );
+                        const destinationCenter = new Point(
+                            additionalInfo.destination.getX(),
+                            additionalInfo.destination.getY()
+                        );
 
                         s.line(
                             pl + originCenter.getX() * cellSide,
@@ -166,21 +172,6 @@ export default class CaveExplorer {
                             pt + destinationCenter.getY()  * cellSide
                         );
                     })
-                }
-
-                s.noStroke();
-                s.fill(nodeColor);
-                const nodes = graph.getNodes();
-                for(let nodeId in nodes) {
-                    if(!nodes.hasOwnProperty(nodeId)) continue;
-                    const node = nodes[nodeId].node;
-                    const multiplier = 1;
-                    const smallerPadding = (cellSide - (cellSide * multiplier)) / 2;
-                    s.circle(
-                        smallerPadding + pl + node.getCenter().getX() * cellSide,
-                        smallerPadding + pt + node.getCenter().getY() * cellSide,
-                        cellSide * multiplier
-                    )
                 }
             }
         }
