@@ -17,7 +17,7 @@ export default class CaveExplorer {
         const parent = document.querySelector("#caveExplorer");
         if(!parent) return;
         let canvas, mapGenerator, map, camera, renderer, cameraRenderer;
-        let noiseGenerator, mesh, graphConnections, roomDetector;
+        let noiseGenerator, mesh;
         const meshStrategy = new MeshFromMarchingSquares();
         const meshGenerator = new MeshGenerator();
         const bounds = [];
@@ -32,8 +32,6 @@ export default class CaveExplorer {
         const hCells = Math.floor( height / cellSide);
         const pl = Math.floor((width - cellSide * wCells) / 2);
         const pt = Math.floor((height - cellSide * hCells) / 2);
-        let rooms = null;
-        let passages = null;
 
         const sketch = (s) => {
             s.setup = () => {
@@ -47,11 +45,8 @@ export default class CaveExplorer {
                 );
                 noiseGenerator = new NoiseGenerator(s, 45);
                 map = mapGenerator.generate(noiseGenerator, smoothing);
-                roomDetector = new RoomDetector(mapGenerator.TILE_EMPTY);
-                rooms = roomDetector.get(map);
-
                 const roomConnector = new RoomConnector(mapGenerator.TILE_EMPTY);
-                graphConnections = roomConnector.connect(map);
+                roomConnector.connect(map, 1);
 
                 meshStrategy.setSide(cellSide).setSource(map);
                 meshGenerator.setStrategy(meshStrategy);
@@ -74,104 +69,27 @@ export default class CaveExplorer {
                         ))
                     });
 
-
-                /*
                 let xCamera, yCamera;
                 do {
                     xCamera = Math.floor(Math.random() * wCells);
                     yCamera = Math.floor(Math.random() * hCells);
-                } while(map.get(xCamera, yCamera) === TILE_FILLED);
+                } while(map.get(xCamera, yCamera) === mapGenerator.TILE_FILLED);
                 camera = new Camera(
                     new Point(xCamera * cellSide + cellSide / 2, yCamera * cellSide + cellSide / 2),
                     0,
                     45
                 );
                 camera.setMovementController(new StrifingMovementController(s))
-                cameraRenderer = new RayCastingTopDownRenderer(canvas, s, false);
-                 */
-
+                cameraRenderer = new RayCastingTopDownRenderer(canvas, s, true);
             }
 
             s.draw = () => {
                 s.background(30);
                 s.fill(70);
                 renderer.render(mesh);
-
-                /**
-                s.strokeWeight(1);
-                s.stroke(255,255,255);
-                map.forEach( (source, x, y) => {
-                    const value = source.get(x, y);
-                    const color = (value === 0) ? 255 : (value === 1 ?  0 : "red");
-                    s.fill(color);
-                    s.square(
-                        pl + x * cellSide,
-                        pt + y * cellSide,
-                        cellSide
-                    );
-                });
-
-                const colors = ["blue"];
-
-                rooms.map( (room, roomIndex) => {
-                    const tl = room.getTopLeft();
-                    const bl = room.getBottomRight();
-                    const center = room.getCenter();
-                    const centerMultiplier = 0.7;
-                    const ap = (cellSide - (cellSide * centerMultiplier)) / 2;
-                    const color = colors[roomIndex % colors.length];
-
-                    s.noFill();
-                    s.strokeWeight(1);
-                    s.stroke(color);
-                    s.rect(
-                        pl + tl.getX() * cellSide,
-                        pt + tl.getY() * cellSide,
-                        (bl.getX() - tl.getX() + 1) * cellSide,
-                        (bl.getY() - tl.getY() + 1) * cellSide
-                    );
-
-                    s.noStroke()
-                    s.fill(color);
-                    s.square(
-                        ap + pl + center.getX() * cellSide,
-                        ap + pt + center.getY() * cellSide,
-                        cellSide * centerMultiplier
-                    )
-                });
-                 */
-
-                s.graphRenderer(graphConnections, "red", "red");
-
                 if(camera) {
                     camera.move();
                     cameraRenderer.render(camera.getPosition(), camera.getRays(), bounds);
-                }
-            }
-
-            s.graphRenderer = (graph, nodeColor, edgeColor) => {
-                s.strokeWeight(2);
-                s.stroke(edgeColor);
-                const edges = graph.getEdges();
-                for(let originId in edges) {
-                    if (!edges.hasOwnProperty(originId)) continue;
-                    edges[originId].getDataAsArray().forEach( ({origin, destination, additionalInfo}) => {
-                        const originCenter = new Point(
-                            additionalInfo.origin.getX(),
-                            additionalInfo.origin.getY()
-                        );
-                        const destinationCenter = new Point(
-                            additionalInfo.destination.getX(),
-                            additionalInfo.destination.getY()
-                        );
-
-                        s.line(
-                            pl + originCenter.getX() * cellSide,
-                            pt + originCenter.getY() * cellSide,
-                            pl + destinationCenter.getX() * cellSide,
-                            pt + destinationCenter.getY()  * cellSide
-                        );
-                    })
                 }
             }
         }

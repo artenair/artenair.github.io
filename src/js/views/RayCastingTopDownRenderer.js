@@ -64,8 +64,8 @@ export default class RayCastingTopDownRenderer {
         if(!this._displayBounds) return;
 
         this._engine.stroke(125);
-        bounds.forEach( (edge, index) => {
-            this._engine.strokeWeight(index < 4 ? 10 : 5);
+        this._engine.strokeWeight(1);
+        bounds.forEach( (edge) => {
             const start = edge.getStart();
             const end = edge.getEnd();
             this._engine.line( start.getX(), start.getY(), end.getX(), end.getY());
