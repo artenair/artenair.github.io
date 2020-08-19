@@ -8,21 +8,31 @@ export default class Camera {
      * @param {number} facing
      * @param {number} fov
      * @param {number} rays
+     * @param {number} radius
      */
-    constructor(position, facing = 0, fov = 120, rays= 120) {
+    constructor(position, facing = 0, fov = 120, rays= 120, radius = 20) {
         this._position = position;
         this._facing = facing;
         this._fov = fov;
         this._rays = this._generateRays(rays);
+        this._radius = radius;
+    }
+
+    getRadius() {
+        return this._radius;
     }
 
     setMovementController(movementController) {
         this._movementController = movementController;
     }
 
-    move() {
+    /**
+     * @param {QuadMap} bounds
+     * @param {callback} searchFunction
+     */
+    move(bounds = null, searchFunction = null) {
         if(!this._movementController) return;
-        this._movementController.move(this);
+        this._movementController.move(this, bounds, searchFunction);
     }
 
     /**

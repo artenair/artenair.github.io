@@ -21,20 +21,25 @@ export default class QuadMap {
         this._expanded = false;
     }
 
-    near(point, searchRadius) {
-        const searchCircle = new Circle(point, searchRadius)
+    near(point, searchRadius, intersectionChecker = null) {
+        const searchCircle = new Circle(point, searchRadius);
+        if(!intersectionChecker) {
+            intersectionChecker = (a, b) => {
+                return a.intersects(b.getSkeleton());
+            }
+        }
         if(!searchCircle.intersectsRectangle(this._boundaries)) return [];
         const found = [];
         for(let particle of this._particles) {
-            if(!searchCircle.intersects(particle.getSkeleton())) continue;
+            if(!intersectionChecker(searchCircle, particle)) continue;
             found.push(particle);
         }
 
         if(this._expanded) {
-            this._first.near(point, searchRadius).forEach(particle => found.push(particle));
-            this._second.near(point, searchRadius).forEach(particle => found.push(particle));
-            this._third.near(point, searchRadius).forEach(particle => found.push(particle));
-            this._fourth.near(point, searchRadius).forEach(particle => found.push(particle));
+            this._first.near(point, searchRadius, intersectionChecker).forEach(particle => found.push(particle));
+            this._second.near(point, searchRadius, intersectionChecker).forEach(particle => found.push(particle));
+            this._third.near(point, searchRadius, intersectionChecker).forEach(particle => found.push(particle));
+            this._fourth.near(point, searchRadius, intersectionChecker).forEach(particle => found.push(particle));
         }
 
         return found;

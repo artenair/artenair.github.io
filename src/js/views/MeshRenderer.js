@@ -13,8 +13,9 @@ export default class MeshRenderer {
 
     /**
      * @param {Mesh} mesh
+     * @param {Edge[]} bounds
      */
-    render(mesh) {
+    render(mesh, bounds = []) {
         this._engine.noStroke();
         mesh.reset();
         while(mesh.hasMore()) {
@@ -27,5 +28,19 @@ export default class MeshRenderer {
             this._engine.endShape(this._engine.CLOSE);
             this._engine.pop();
         }
+
+        this._engine.strokeWeight(1);
+        this._engine.stroke(125);
+        this._engine.strokeWeight(3);
+        bounds.forEach( (edge) => {
+            const start = edge.getStart();
+            const end = edge.getEnd();
+            this._engine.line(
+                start.getX() + this._pl,
+                start.getY() + this._pt,
+                end.getX() + this._pl,
+                end.getY() + this._pt
+            );
+        });
     }
 }

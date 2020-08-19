@@ -2,23 +2,21 @@ import PassageDirection, {Direction} from "../model/PassageDirection";
 import Edge from "../geometry/Edge";
 import Point from "../geometry/Point";
 
-export default class RayCastingTopDownRenderer {
+export default class NightModeRayCastingRenderer {
 
-    constructor(canvas, engine, displayBounds = true) {
+    constructor(canvas, engine) {
         this._canvas = canvas;
         this._engine = engine;
-        this._displayBounds = displayBounds;
     }
 
     /**
      * @param {Point} position
      * @param {Vector2[]} rays
+     * @param {number} cameraRadius
      * @param {Edge[]} bounds
      */
-    render(position, rays, bounds) {
-        this._engine.circle(position.getX(), position.getY(), 20);
-        this._engine.strokeWeight(1);
-        this._engine.stroke(255, 255, 255);
+    render(position, rays, cameraRadius, bounds) {
+        this._engine.background(0);
 
         /**
          * @type {Point[]}
@@ -48,27 +46,22 @@ export default class RayCastingTopDownRenderer {
                 null
             )
         }).filter( intersection => !! intersection );
+        intersections.push(position);
 
-        this._engine.strokeWeight(1);
-        this._engine.stroke(255, 255, 255);
-
-        intersections.forEach( (intersection, index) => {
-            this._engine.line(
-                position.getX(),
-                position.getY(),
-                intersection.getX(),
-                intersection.getY()
-            )
+        this._engine.erase();
+        this._engine.push();
+        this._engine.beginShape();
+        intersections.forEach( intersection => {
+            const xSign = Math.sign(intersection.getX() - position.getX());
+            const ySign = Math.sign(intersection.getY() - position.getY());
+            this._engine.vertex(intersection.getX() + xSign * 10, intersection.getY() + ySign * 10);
         });
+        this._engine.endShape(this._engine.CLOSE);
+        this._engine.pop();
+        this._engine.fill(255);
+        this._engine.circle(position.getX(), position.getY(), cameraRadius * 7.5);
+        this._engine.noErase();
 
-        if(!this._displayBounds) return;
-
-        this._engine.stroke(125);
-        this._engine.strokeWeight(3);
-        bounds.forEach( (edge) => {
-            const start = edge.getStart();
-            const end = edge.getEnd();
-            this._engine.line( start.getX(), start.getY(), end.getX(), end.getY());
-        });
+        this._engine.circle(position.getX(), position.getY(), cameraRadius);
     }
 }
