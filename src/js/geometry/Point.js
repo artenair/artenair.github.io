@@ -21,10 +21,12 @@ export default class Point {
     }
 
     getDistance(point) {
-        return Math.sqrt(
-            Math.pow(this.getX() - point.getX(), 2) +
-            Math.pow(this.getY() - point.getY(), 2)
-        )
+        return Math.sqrt(this.getSquaredDistance(point));
+    }
+
+    getSquaredDistance(point) {
+        return Math.pow(this.getX() - point.getX(), 2) +
+            Math.pow(this.getY() - point.getY(), 2);
     }
 
     getAngleBetween(focus, radiants = false) {

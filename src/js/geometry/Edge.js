@@ -14,22 +14,14 @@ export default class Edge {
 
     getLength() {
         if(!this._length) {
-            this._length = Math.sqrt(
-                Math.pow(this._end.getX() - this._start.getX(), 2) +
-                Math.pow(this._end.getY() - this._start.getY(), 2)
-            )
+            this._length = Math.sqrt(this.getSquaredLength())
         }
         return this._length;
     }
 
-    getDistanceFromCircle(circle) {
-        const a = new Edge(this.getStart(), circle.getCenter()).getLength();
-        const b = this.getLength();
-        const c = new Edge(this.getStart(), circle.getCenter()).getLength();
-        const triangleArea = Math.sqrt(
-            (a+b+c) * (-a+b+c) * (a-b+c) * (a+b-c)
-        ) / 4;
-        return 2 * triangleArea / b;
+    getSquaredLength() {
+        return Math.pow(this._end.getX() - this._start.getX(), 2) +
+            Math.pow(this._end.getY() - this._start.getY(), 2);
     }
 
     /**

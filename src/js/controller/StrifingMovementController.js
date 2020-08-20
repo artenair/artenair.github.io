@@ -10,8 +10,8 @@ export default class StrifingMovementController {
 
     /**
      * @param {Camera} camera
-     * @param {QuadMap} bounds
-     * @param {callback} searchFunction
+     * @param {Edge[]} bounds
+     * @param {Function} searchFunction
      */
     move(camera, bounds, searchFunction) {
 
@@ -38,14 +38,13 @@ export default class StrifingMovementController {
             camera.moveBackwards(2);
         }
 
-        const nearEdges = bounds.near(camera.getPosition(), 2 * camera.getRadius(), searchFunction);
-        if(false && nearEdges.length !== 0) {
-            nearEdges.forEach( particle => {
-                const segment = particle.getSkeleton();
-                const distance = segment.getDistanceFromCircle(new Circle(camera.getPosition(), camera.getRadius()));
-                if(distance > camera.getRadius()) return;
-                camera.setPosition(cachedCameraPosition);
-            })
+        const cameraCircle = new Circle(camera.getPosition(), camera.getRadius());
+        const nearEdges = bounds.filter( bound => {
+            return searchFunction(cameraCircle, bound);
+        })
+
+        if(nearEdges.length !== 0) {
+            camera.setPosition(cachedCameraPosition);
         }
     }
 }
