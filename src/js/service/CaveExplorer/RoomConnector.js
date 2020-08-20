@@ -106,6 +106,9 @@ export default class RoomConnector {
                 })
             })
         }
+
+
+
     }
 
     _getLine(origin, destination) {

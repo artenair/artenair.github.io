@@ -11,6 +11,7 @@ import RoomConnector from "../service/CaveExplorer/RoomConnector";
 import NightModeRayCastingRenderer from "../views/NightModeRayCastingRenderer";
 import TurningMovementController from "../controller/TurningMovementController";
 import MeshFromMarchingSquares from "../service/MeshGenerator/MeshFromMarchingSquares";
+import WallRestorer from "../service/CaveExplorer/WallRestorer";
 
 export default class CaveExplorer {
     run() {
@@ -83,7 +84,9 @@ export default class CaveExplorer {
                 const roomConnector = new RoomConnector(mapGenerator.TILE_EMPTY);
                 const roomDetector = new RoomDetector(mapGenerator.TILE_EMPTY);
                 rooms = roomDetector.get(map);
-                roomConnector.connect(map, 3);
+                roomConnector.connect(map, 2);
+                const wallRestorer = new WallRestorer(mapGenerator.TILE_FILLED);
+                wallRestorer.restore(map, 2);
                 meshStrategy.setSide(cellSide).setSource(map);
                 meshGenerator.setStrategy(meshStrategy);
                 mesh = meshGenerator.generate();
@@ -122,6 +125,7 @@ export default class CaveExplorer {
                         camera.getPosition(),
                         camera.getRays(),
                         camera.getRadius(),
+                        camera.getRadius() * 15,
                         bounds);
                     s.image(cameraBuffer, 0, 0);
                 }

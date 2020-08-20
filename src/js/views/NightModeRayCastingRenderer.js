@@ -13,9 +13,10 @@ export default class NightModeRayCastingRenderer {
      * @param {Point} position
      * @param {Vector2[]} rays
      * @param {number} cameraRadius
+     * @param {number} discoverRadius
      * @param {Edge[]} bounds
      */
-    render(position, rays, cameraRadius, bounds) {
+    render(position, rays, cameraRadius, discoverRadius= 20, bounds= []) {
         this._engine.background(0);
 
         /**
@@ -59,7 +60,7 @@ export default class NightModeRayCastingRenderer {
         this._engine.endShape(this._engine.CLOSE);
         this._engine.pop();
         this._engine.fill(255);
-        this._engine.circle(position.getX(), position.getY(), cameraRadius * 7.5);
+        this._engine.circle(position.getX(), position.getY(), discoverRadius);
         this._engine.noErase();
 
         this._engine.circle(position.getX(), position.getY(), cameraRadius);

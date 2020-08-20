@@ -1,7 +1,6 @@
 import Matrix from "../Matrix";
-import CaveTile from "./CaveTile";
-import CaveRoom from "./CaveRoom";
 import RoomDetector from "./RoomDetector";
+import WallRestorer from "./WallRestorer";
 
 export default class MapGenerator {
 
@@ -9,9 +8,6 @@ export default class MapGenerator {
         this.width = width;
         this.height = height;
         this.fillPercent = Math.min(Math.max(fillPercent, 0), 1);
-
-        this.TILE_FILLED_DEBUG = 3;
-        this.TILE_EMPTY_DEBUG = 2;
         this.TILE_FILLED = 1;
         this.TILE_EMPTY = 0;
     }
@@ -25,10 +21,6 @@ export default class MapGenerator {
     generate(noiseGenerator, smoothing= 0, threshold = 5) {
         let map = new Matrix(this.width, this.height, 1);
         map.forEach((map, x, y) => {
-            if(x === 0 || x === map.getWidth() -1 || y === 0 || y === map.getHeight() -1) {
-                map.set(x, y, this.TILE_FILLED);
-                return;
-            }
             map.set(x, y, noiseGenerator.get() <= this.fillPercent ? this.TILE_FILLED : this.TILE_EMPTY);
         });
         map = this._smooth(map, smoothing);
