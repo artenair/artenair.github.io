@@ -663,6 +663,67 @@ var Rectangle = /*#__PURE__*/function () {
 
 /***/ }),
 
+/***/ "./src/js/geometry/RegularPolygon.js":
+/*!*******************************************!*\
+  !*** ./src/js/geometry/RegularPolygon.js ***!
+  \*******************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return RegularPolygon; });
+/* harmony import */ var _Point__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Point */ "./src/js/geometry/Point.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+var RegularPolygon = /*#__PURE__*/function () {
+  function RegularPolygon(sides, center) {
+    var radius = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
+    var startingAngle = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+
+    _classCallCheck(this, RegularPolygon);
+
+    this._vertices = [];
+    var shiftingAngle = Math.PI * 2 / sides;
+
+    for (var i = 0; i < sides; i++) {
+      this._vertices[i] = new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](radius * Math.cos(startingAngle + i * shiftingAngle) + center.getX(), radius * Math.sin(startingAngle + i * shiftingAngle) + center.getY());
+    }
+  }
+
+  _createClass(RegularPolygon, [{
+    key: "getVertices",
+    value: function getVertices() {
+      return this._vertices.values();
+    }
+  }, {
+    key: "getNearestVertexTo",
+    value: function getNearestVertexTo(point) {
+      return this._vertices.reduce(function (nearestVertex, vertex) {
+        if (!nearestVertex) return vertex;
+        return vertex.getDistance(point) < nearestVertex.getDistance(point) ? vertex : nearestVertex;
+      }, null);
+    }
+  }, {
+    key: Symbol.iterator,
+    value: function value() {
+      return this._vertices.values();
+    }
+  }]);
+
+  return RegularPolygon;
+}();
+
+
+
+/***/ }),
+
 /***/ "./src/js/geometry/Vector2.js":
 /*!************************************!*\
   !*** ./src/js/geometry/Vector2.js ***!
@@ -703,6 +764,16 @@ var Vector2 = /*#__PURE__*/function () {
       return this._y;
     }
   }, {
+    key: "getX",
+    value: function getX() {
+      return this._x;
+    }
+  }, {
+    key: "getY",
+    value: function getY() {
+      return this._y;
+    }
+  }, {
     key: "getTetha",
     value: function getTetha() {
       if (!this._tetha) {
@@ -721,9 +792,22 @@ var Vector2 = /*#__PURE__*/function () {
       return this._length;
     }
   }, {
+    key: "setMagnitude",
+    value: function setMagnitude(magnitude) {
+      this._x = magnitude * Math.cos(this.getTetha());
+      this._y = magnitude * Math.sin(this.getTetha());
+      this._length = magnitude;
+      return this;
+    }
+  }, {
     key: "apply",
     value: function apply(point) {
       return new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](this._x + point.getX(), this._y + point.getY());
+    }
+  }, {
+    key: "asPoint",
+    value: function asPoint() {
+      return new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](this._x, this._y);
     }
   }, {
     key: "flipX",
@@ -746,6 +830,16 @@ var Vector2 = /*#__PURE__*/function () {
     key: "add",
     value: function add(vector) {
       return new Vector2(this.getXComponent() + vector.getXComponent(), this.getYComponent() + vector.getYComponent());
+    }
+  }, {
+    key: "subtract",
+    value: function subtract(vector) {
+      return new Vector2(this.getXComponent() - vector.getXComponent(), this.getYComponent() - vector.getYComponent());
+    }
+  }, {
+    key: "multiply",
+    value: function multiply(multiplier) {
+      return new Vector2(this.getXComponent() * multiplier, this.getYComponent() * multiplier);
     }
   }, {
     key: "getPerpendicular",
@@ -899,6 +993,192 @@ var AcceleratingParticle = /*#__PURE__*/function (_Particle) {
 
   return AcceleratingParticle;
 }(_Particle__WEBPACK_IMPORTED_MODULE_0__["default"]);
+
+
+
+/***/ }),
+
+/***/ "./src/js/model/Boid.js":
+/*!******************************!*\
+  !*** ./src/js/model/Boid.js ***!
+  \******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Boid; });
+/* harmony import */ var _geometry_Point__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../geometry/Point */ "./src/js/geometry/Point.js");
+/* harmony import */ var _geometry_Vector2__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../geometry/Vector2 */ "./src/js/geometry/Vector2.js");
+/* harmony import */ var _geometry_RegularPolygon__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../geometry/RegularPolygon */ "./src/js/geometry/RegularPolygon.js");
+/* harmony import */ var _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../geometry/Rectangle */ "./src/js/geometry/Rectangle.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+
+
+
+var Boid = /*#__PURE__*/function () {
+  /**
+   * @param position Vector2
+   * @param lookingAt number
+   * @param radius number
+   * @param sides number
+   * @params speed number
+   */
+  function Boid(position, lookingAt) {
+    var radius = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
+    var sides = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 3;
+    var speed = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : -1;
+    var loopAround = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
+    var boundaries = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : null;
+    var fov = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : 3 * Math.PI / 2;
+
+    _classCallCheck(this, Boid);
+
+    this.speedMagnitude = speed > 0 ? speed : 5 + Math.random() * 15;
+    this.position = position;
+    this.speed = new _geometry_Vector2__WEBPACK_IMPORTED_MODULE_1__["default"](this.speedMagnitude * Math.cos(lookingAt), this.speedMagnitude * Math.sin(lookingAt));
+    this.sides = 3;
+    this.radius = radius;
+    this.loopAround = loopAround;
+    this.boundaries = boundaries instanceof _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_3__["default"] ? boundaries : null;
+    this.fov = fov;
+  }
+
+  _createClass(Boid, [{
+    key: "getSkeleton",
+    value: function getSkeleton() {
+      return new _geometry_RegularPolygon__WEBPACK_IMPORTED_MODULE_2__["default"](this.sides, this.position, this.radius, this.speed.getTetha());
+    }
+  }, {
+    key: "getPosition",
+    value: function getPosition() {
+      return this.position;
+    }
+  }, {
+    key: "getRadius",
+    value: function getRadius() {
+      return this.radius;
+    }
+  }, {
+    key: "getSpeed",
+    value: function getSpeed() {
+      return this.speed;
+    }
+  }, {
+    key: "move",
+    value: function move() {
+      var dx = this.speed.getX();
+      var dy = this.speed.getY();
+      var nextX = this.position.getX() + dx;
+      var nextY = this.position.getY() + dy;
+
+      if (this.loopAround && this.boundaries instanceof _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_3__["default"]) {
+        if (nextX < this.boundaries.getOrigin().getX()) {
+          dx += this.boundaries.getWidth();
+        }
+
+        if (nextX > this.boundaries.getDestination().getX()) {
+          dx -= this.boundaries.getWidth();
+        }
+
+        if (nextY < this.boundaries.getOrigin().getY()) {
+          dy += this.boundaries.getHeight();
+        }
+
+        if (nextY > this.boundaries.getDestination().getY()) {
+          dy -= this.boundaries.getHeight();
+        }
+      }
+
+      this.position = this.position.add(new _geometry_Vector2__WEBPACK_IMPORTED_MODULE_1__["default"](dx, dy));
+      return this;
+    }
+  }, {
+    key: "flock",
+    value: function flock(neighbours) {
+      var alignment = this.applyAlignment(neighbours); // const separation = this.applySeparation(neighbours);
+
+      this.speed = alignment;
+      return this;
+    }
+    /**
+     * @param neighbours
+     * @returns {Vector2}
+     */
+
+  }, {
+    key: "applySeparation",
+    value: function applySeparation(neighbours) {
+      var _this = this;
+
+      var separation = new _geometry_Vector2__WEBPACK_IMPORTED_MODULE_1__["default"](0, 0);
+      if (neighbours.length <= 1) return separation;
+      neighbours.forEach(function (neighbour) {
+        if (neighbour === _this) return;
+        var direction = separation.add(neighbour.getPosition());
+
+        var magnitude = _this.getPosition().asPoint().getDistance(neighbour.getPosition().asPoint());
+
+        separation = separation.add(direction.multiply(1 / magnitude));
+      });
+      return separation.flipX().flipY();
+    }
+    /**
+     * @param neighbours
+     * @returns {Vector2}
+     */
+
+  }, {
+    key: "applyAlignment",
+    value: function applyAlignment(neighbours) {
+      var _this2 = this;
+
+      var alignment = new _geometry_Vector2__WEBPACK_IMPORTED_MODULE_1__["default"](0, 0);
+      if (neighbours.length <= 1) return alignment;
+      var aggregate = neighbours.reduce(function (accumulator, neighbour) {
+        if (neighbour === _this2) return accumulator;
+        return accumulator.add(neighbour.getSpeed());
+      }, alignment);
+      var avg = aggregate.multiply(1 / neighbours.length - 1);
+      this.debugVector(avg, "Average");
+      var maxSpeedAvg = avg.setMagnitude(this.speedMagnitude);
+      this.debugVector(avg, "Max speed average");
+      var desiredVelocity = maxSpeedAvg.subtract(this.speed);
+      this.debugVector(avg, "Desired velocity");
+      return desiredVelocity;
+    }
+  }, {
+    key: "debugVector",
+    value: function debugVector(vector, message) {
+      var x = vector.getX();
+      var y = vector.getY();
+
+      if (isNaN(x) || isNaN(y) || !isFinite(x) || !isFinite(y)) {
+        console.log(vector);
+        throw new Error(message);
+      }
+    }
+    /**
+     * @param neighbours
+     * @returns {Vector2}
+     */
+
+  }, {
+    key: "applyCohesion",
+    value: function applyCohesion(neighbours) {
+      return new _geometry_Vector2__WEBPACK_IMPORTED_MODULE_1__["default"](0, 0);
+    }
+  }]);
+
+  return Boid;
+}();
 
 
 
@@ -1448,11 +1728,27 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Boids; });
 /* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! p5 */ "./node_modules/p5/lib/p5.min.js");
 /* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(p5__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _model_Boid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../model/Boid */ "./src/js/model/Boid.js");
+/* harmony import */ var _geometry_Point__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../geometry/Point */ "./src/js/geometry/Point.js");
+/* harmony import */ var _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../geometry/Rectangle */ "./src/js/geometry/Rectangle.js");
+/* harmony import */ var _service_QuadMap__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../service/QuadMap */ "./src/js/service/QuadMap.js");
+/* harmony import */ var _geometry_Vector2__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../geometry/Vector2 */ "./src/js/geometry/Vector2.js");
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+
+
 
 
 
@@ -1469,16 +1765,54 @@ var Boids = /*#__PURE__*/function () {
       var canvas;
       var width = Math.floor(parent.clientWidth);
       var height = Math.floor(parent.clientHeight);
+      var boids = [];
+      var personalSpace = 200;
 
       var sketch = function sketch(s) {
         s.setup = function () {
           canvas = s.createCanvas(width, height);
           canvas.parent(parent);
+
+          for (var i = 0; i < 50; i++) {
+            boids.push(new _model_Boid__WEBPACK_IMPORTED_MODULE_1__["default"](new _geometry_Vector2__WEBPACK_IMPORTED_MODULE_5__["default"](Math.random() * s.width, Math.random() * s.height), 2 * Math.PI * Math.random(), 5 * Math.random() + 7, 3, 2 * Math.random() + 3, true, new _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_3__["default"](0, 0, s.width, s.height)));
+          }
         };
 
         s.draw = function () {
           s.background(50);
-          s.fill(70);
+          s.fill(255);
+          var quadTree = new _service_QuadMap__WEBPACK_IMPORTED_MODULE_4__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_2__["default"](0, 0), s.width, s.height, 4);
+          boids.forEach(function (boid) {
+            return quadTree.add(boid.getPosition().asPoint(), boid);
+          });
+
+          var _iterator = _createForOfIteratorHelper(boids),
+              _step;
+
+          try {
+            for (_iterator.s(); !(_step = _iterator.n()).done;) {
+              var boid = _step.value;
+              var neighbours = quadTree.near(boid.getPosition().asPoint(), personalSpace, function (searchCircle, boid) {
+                var circleCenter = searchCircle.getCenter();
+                var boidSkeleton = boid.getSkeleton();
+                var nearestVertex = boidSkeleton.getNearestVertexTo(circleCenter);
+                return nearestVertex.getDistance(circleCenter) <= searchCircle.getRadius();
+              });
+              boid.flock(neighbours).move();
+              s.circle(boid.getPosition().getX(), boid.getPosition().getY(), boid.getRadius());
+              /**
+              s.beginShape();
+              for(let vertex of boid.getSkeleton()) {
+                  s.vertex(vertex.getX(), vertex.getY());
+              }
+              s.endShape(s.CLOSE);
+              */
+            }
+          } catch (err) {
+            _iterator.e(err);
+          } finally {
+            _iterator.f();
+          }
         };
       };
 
