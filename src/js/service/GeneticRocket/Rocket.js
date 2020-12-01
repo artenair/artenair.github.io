@@ -1,20 +1,53 @@
 import Rectangle from "../../geometry/Rectangle";
-import Point from "../../geometry/Point";
+import p5 from "p5";
 
 export default class Rocket {
 
-    constructor(position, lifespan, dna) {
-        this._position = position;
-        this._skeleton = new Rectangle(
-            new Point(position.x - 5, position.y - 5),
-            new Point(position.x + 5, position.y + 5)
-        );
-        this._lifespan = lifespan;
+    constructor(position, lifespan, dna, speedMagnitude = 15) {
         this._dna = dna;
+        this._age = 0;
+        this._lifespan = lifespan;
+        this._speedMagnitude = speedMagnitude;
+        this._speed = new p5.Vector(0,0);
+        this._position = position;
+        this._collided = false;
+        this._success = false;
+    }
+
+    setSuccess(success  = true) {
+        this._success = success;
+    }
+
+    setCollided(collided = true) {
+        this._collided = collided;
     }
 
     getSkeleton() {
-        return this._skeleton;
+        return new Rectangle(
+            this._position.x - 5,
+            this._position.y - 5,
+            10,
+            10
+        );
+    }
+
+    getVelocity() {
+        return this._speed;
+    }
+
+    isAlive() {
+        return  this._age < this._lifespan &&
+                this._age < this._dna.length &&
+                !this._collided &&
+                !this._success;
+    }
+
+    move() {
+        if(!this.isAlive()) return;
+
+        this._speed.add(this._dna[this._age++]);
+        this._speed.limit(this._speedMagnitude);
+        this._position.add(this._speed);
     }
 
 }

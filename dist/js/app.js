@@ -86,6 +86,135 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/line-intersect/es/check-intersection.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/line-intersect/es/check-intersection.js ***!
+  \**************************************************************/
+/*! exports provided: checkIntersection */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "checkIntersection", function() { return checkIntersection; });
+var COLINEAR = intersectResult('colinear');
+var PARALLEL = intersectResult('parallel');
+var NONE = intersectResult('none');
+/**
+* Check how two line segments intersect eachother. Line segments are represented
+* as (x1, y1)-(x2, y2) and (x3, y3)-(x4, y4).
+*
+* @param {number} x1
+* @param {number} y1
+* @param {number} x2
+* @param {number} y2
+* @param {number} x3
+* @param {number} y3
+* @param {number} x4
+* @param {number} y4
+* @return {object} Object describing intersection that looks like
+*    {
+*      type: none|parallel|colinear|intersecting,
+*      point: {x, y} - only defined when type == intersecting
+*    }
+*/
+
+function checkIntersection(x1, y1, x2, y2, x3, y3, x4, y4) {
+  var denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+  var numeA = (x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3);
+  var numeB = (x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3);
+
+  if (denom == 0) {
+    if (numeA == 0 && numeB == 0) {
+      return COLINEAR;
+    }
+
+    return PARALLEL;
+  }
+
+  var uA = numeA / denom;
+  var uB = numeB / denom;
+
+  if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
+    return intersecting({
+      x: x1 + uA * (x2 - x1),
+      y: y1 + uA * (y2 - y1)
+    });
+  }
+
+  return NONE;
+}
+
+function intersecting(point) {
+  var result = intersectResult('intersecting');
+  result.point = point;
+  return result;
+}
+
+function intersectResult(type) {
+  return {
+    type: type
+  };
+}
+
+/***/ }),
+
+/***/ "./node_modules/line-intersect/es/colinear-point-within-segment.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/line-intersect/es/colinear-point-within-segment.js ***!
+  \*************************************************************************/
+/*! exports provided: colinearPointWithinSegment */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "colinearPointWithinSegment", function() { return colinearPointWithinSegment; });
+/**
+* Assuming a point is on same line as a line segment, tell if that point is
+* on the line segment.
+*
+* @param {number} pointX - X of point
+* @param {number} pointY - Y of point
+* @param {number} startX - X of line segment start
+* @param {number} startY - Y of line segment start
+* @param {number} endX   - X of line segment end
+* @param {number} endY   - Y of line segment end
+* @return {boolean} true if point is within segment, false otherwise.
+*/
+function colinearPointWithinSegment(pointX, pointY, startX, startY, endX, endY) {
+  if (startX != endX) {
+    if (startX <= pointX && pointX <= endX) return true;
+    if (startX >= pointX && pointX >= endX) return true;
+  } else {
+    if (startY <= pointY && pointY <= endY) return true;
+    if (startY >= pointY && pointY >= endY) return true;
+  }
+
+  return false;
+}
+
+/***/ }),
+
+/***/ "./node_modules/line-intersect/es/index.js":
+/*!*************************************************!*\
+  !*** ./node_modules/line-intersect/es/index.js ***!
+  \*************************************************/
+/*! exports provided: checkIntersection, colinearPointWithinSegment */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _check_intersection__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./check-intersection */ "./node_modules/line-intersect/es/check-intersection.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "checkIntersection", function() { return _check_intersection__WEBPACK_IMPORTED_MODULE_0__["checkIntersection"]; });
+
+/* harmony import */ var _colinear_point_within_segment__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./colinear-point-within-segment */ "./node_modules/line-intersect/es/colinear-point-within-segment.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "colinearPointWithinSegment", function() { return _colinear_point_within_segment__WEBPACK_IMPORTED_MODULE_1__["colinearPointWithinSegment"]; });
+
+
+
+
+
+/***/ }),
+
 /***/ "./node_modules/p5/lib/p5.min.js":
 /*!***************************************!*\
   !*** ./node_modules/p5/lib/p5.min.js ***!
@@ -417,11 +546,13 @@ var Circle = /*#__PURE__*/function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Edge; });
 /* harmony import */ var _Point__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Point */ "./src/js/geometry/Point.js");
+/* harmony import */ var line_intersect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! line-intersect */ "./node_modules/line-intersect/es/index.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
 
 
 
@@ -494,12 +625,12 @@ var Edge = /*#__PURE__*/function () {
       var y2 = this.getEnd().getY();
       var y3 = edge.getStart().getY();
       var y4 = edge.getEnd().getY();
-      var denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-      if (denominator === 0) return null;
-      var t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denominator;
-      var u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denominator;
-      if (t <= 0 || t >= 1 || u <= 0) return null;
-      return new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](x1 + t * (x2 - x1), y1 + t * (y2 - y1));
+
+      var _checkIntersection = Object(line_intersect__WEBPACK_IMPORTED_MODULE_1__["checkIntersection"])(x1, y1, x2, y2, x3, y3, x4, y4),
+          type = _checkIntersection.type,
+          point = _checkIntersection.point;
+
+      return type === "intersection" ? new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](point.x, point.y) : null;
     }
   }]);
 
@@ -593,11 +724,13 @@ var Point = /*#__PURE__*/function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Rectangle; });
 /* harmony import */ var _Point__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Point */ "./src/js/geometry/Point.js");
+/* harmony import */ var _Edge__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Edge */ "./src/js/geometry/Edge.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
 
 
 
@@ -633,6 +766,28 @@ var Rectangle = /*#__PURE__*/function () {
     key: "contains",
     value: function contains(point) {
       return !(point.getX() < this._topLeft.getX() || point.getX() > this._bottomRight.getX() || point.getY() < this._topLeft.getY() || point.getY() > this._bottomRight.getY());
+    }
+  }, {
+    key: "getAsEdges",
+    value: function getAsEdges() {
+      var topLeft = this.getOrigin();
+      var topRight = new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](this._topLeft.getX() + this.getWidth(), this._topLeft.getY());
+      var bottomRight = new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](this._topLeft.getX() + this.getWidth(), this._topLeft.getY() + this.getHeight());
+      var bottomLeft = new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](this._topLeft.getX(), this._topLeft.getY());
+      return [new _Edge__WEBPACK_IMPORTED_MODULE_1__["default"](topLeft, topRight), new _Edge__WEBPACK_IMPORTED_MODULE_1__["default"](topRight, bottomRight), new _Edge__WEBPACK_IMPORTED_MODULE_1__["default"](bottomRight, bottomLeft), new _Edge__WEBPACK_IMPORTED_MODULE_1__["default"](bottomLeft, bottomRight)];
+    }
+  }, {
+    key: "intersectsEdge",
+    value: function intersectsEdge(edge) {
+      return this.getAsEdges().reduce(function (intersects, rectangleEdge) {
+        var intersection = edge.getIntersection(rectangleEdge);
+
+        if (intersection) {
+          console.log(edge, rectangleEdge, intersection);
+        }
+
+        return intersects || !!intersection;
+      }, false);
     }
   }, {
     key: "getClosestCornerTo",
@@ -1786,24 +1941,25 @@ var GeneticRockets = /*#__PURE__*/function () {
       var width = Math.floor(parent.clientWidth);
       var height = Math.floor(parent.clientHeight);
       var canvas, bounds, obstacles, population;
-      var target = new _geometry_Circle__WEBPACK_IMPORTED_MODULE_3__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width / 2, 100), 100);
+      var target = new _geometry_Circle__WEBPACK_IMPORTED_MODULE_3__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width / 2, 100), 25);
 
       var sketch = function sketch(s) {
         s.setup = function () {
           canvas = s.createCanvas(width, height);
           canvas.parent(parent);
           bounds = [new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](0, 0), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width, 0)), new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width, 0), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width, height)), new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width, height), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](0, height)), new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](0, height), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](0, 0))];
+          console.log(bounds);
           var obstacleWidth = 0.6;
           var xStartOffset = (1 - obstacleWidth) / 2;
           var xEndOffset = 1 - xStartOffset;
           var yCenterOffset = 30;
           var startingPositions = [];
 
-          for (var i = 0; i < 100; i++) {
-            startingPositions.push(s.createVector(width / 2, height - 10));
+          for (var i = 0; i < 1; i++) {
+            startingPositions.push(s.createVector(width / 2, height - 150));
           }
 
-          population = new _service_GeneticRocket_Population__WEBPACK_IMPORTED_MODULE_4__["default"](startingPositions);
+          population = new _service_GeneticRocket_Population__WEBPACK_IMPORTED_MODULE_4__["default"](startingPositions, 200);
           obstacles = [new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xStartOffset, height / 2 - yCenterOffset), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xEndOffset, height / 2 - yCenterOffset)), new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xEndOffset, height / 2 - yCenterOffset), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xEndOffset, height / 2 + yCenterOffset)), new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xEndOffset, height / 2 + yCenterOffset), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xStartOffset, height / 2 + yCenterOffset)), new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xStartOffset, height / 2 + yCenterOffset), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xStartOffset, height / 2 - yCenterOffset))];
         };
 
@@ -1820,16 +1976,40 @@ var GeneticRockets = /*#__PURE__*/function () {
           s.stroke(200);
           obstacles.forEach(printEdges);
           s.fill(200);
-          s.circle(target.getCenter().getX(), target.getCenter().getY(), target.getRadius());
+          s.circle(target.getCenter().getX(), target.getCenter().getY(), 2 * target.getRadius());
+          s.noFill();
 
           var _iterator = _createForOfIteratorHelper(population),
               _step;
 
           try {
-            for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var _loop = function _loop() {
               var rocket = _step.value;
               var skeleton = rocket.getSkeleton();
-              s.rect(skeleton.getStart().getX(), skeleton.getStart().getY(), skeleton.getWidth(), skeleton.getHeight());
+              var angle = rocket.getVelocity().heading();
+
+              if (target.intersectsRectangle(skeleton)) {
+                rocket.setSuccess();
+              }
+
+              var intersectsWithBounds = bounds.reduce(function (collided, bound) {
+                return collided || skeleton.intersectsEdge(bound);
+              }, false);
+              var intersectsWithObstacles = obstacles.reduce(function (collided, obstacle) {
+                return collided || skeleton.intersectsEdge(obstacle);
+              }, false);
+              console.log(intersectsWithBounds, intersectsWithObstacles);
+              rocket.setCollided(intersectsWithBounds || intersectsWithObstacles);
+              s.translate(skeleton.getOrigin().getX(), skeleton.getOrigin().getY());
+              s.rotate(angle);
+              s.rect(0, 0, skeleton.getWidth(), skeleton.getHeight());
+              s.rotate(-angle);
+              s.translate(-skeleton.getOrigin().getX(), -skeleton.getOrigin().getY());
+              rocket.move();
+            };
+
+            for (_iterator.s(); !(_step = _iterator.n()).done;) {
+              _loop();
             }
           } catch (err) {
             _iterator.e(err);
@@ -3708,28 +3888,45 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 
-var Population = function Population(positions) {
-  _classCallCheck(this, Population);
 
-  this._population = [];
+var Population = /*#__PURE__*/function () {
+  function Population(positions) {
+    var lifespan = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 100;
 
-  var _iterator = _createForOfIteratorHelper(positions),
-      _step;
+    _classCallCheck(this, Population);
 
-  try {
-    for (_iterator.s(); !(_step = _iterator.n()).done;) {
-      var position = _step.value;
+    this._population = [];
 
-      this._population.push(_RocketFactory__WEBPACK_IMPORTED_MODULE_0__["default"].random(position));
+    var _iterator = _createForOfIteratorHelper(positions),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var position = _step.value;
+
+        this._population.push(_RocketFactory__WEBPACK_IMPORTED_MODULE_0__["default"].random(position, lifespan));
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
     }
-  } catch (err) {
-    _iterator.e(err);
-  } finally {
-    _iterator.f();
   }
-};
+
+  _createClass(Population, [{
+    key: Symbol.iterator,
+    value: function value() {
+      return this._population.values();
+    }
+  }]);
+
+  return Population;
+}();
 
 
 
@@ -3746,7 +3943,8 @@ var Population = function Population(positions) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Rocket; });
 /* harmony import */ var _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../geometry/Rectangle */ "./src/js/geometry/Rectangle.js");
-/* harmony import */ var _geometry_Point__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../geometry/Point */ "./src/js/geometry/Point.js");
+/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! p5 */ "./node_modules/p5/lib/p5.min.js");
+/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(p5__WEBPACK_IMPORTED_MODULE_1__);
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -3758,22 +3956,109 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 var Rocket = /*#__PURE__*/function () {
   function Rocket(position, lifespan, dna) {
+    var speedMagnitude = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 15;
+
     _classCallCheck(this, Rocket);
 
-    this._position = position;
-    this._skeleton = new _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_0__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](position.x - 5, position.y - 5), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](position.x + 5, position.y + 5));
-    this._lifespan = lifespan;
     this._dna = dna;
+    this._age = 0;
+    this._lifespan = lifespan;
+    this._speedMagnitude = speedMagnitude;
+    this._speed = new p5__WEBPACK_IMPORTED_MODULE_1___default.a.Vector(0, 0);
+    this._position = position;
+    this._collided = false;
+    this._success = false;
   }
 
   _createClass(Rocket, [{
+    key: "setSuccess",
+    value: function setSuccess() {
+      var success = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+      this._success = success;
+    }
+  }, {
+    key: "setCollided",
+    value: function setCollided() {
+      var collided = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+      this._collided = collided;
+    }
+  }, {
     key: "getSkeleton",
     value: function getSkeleton() {
-      return this._skeleton;
+      return new _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_0__["default"](this._position.x - 5, this._position.y - 5, 10, 10);
+    }
+  }, {
+    key: "getVelocity",
+    value: function getVelocity() {
+      return this._speed;
+    }
+  }, {
+    key: "isAlive",
+    value: function isAlive() {
+      return this._age < this._lifespan && this._age < this._dna.length && !this._collided && !this._success;
+    }
+  }, {
+    key: "move",
+    value: function move() {
+      if (!this.isAlive()) return;
+
+      this._speed.add(this._dna[this._age++]);
+
+      this._speed.limit(this._speedMagnitude);
+
+      this._position.add(this._speed);
     }
   }]);
 
   return Rocket;
+}();
+
+
+
+/***/ }),
+
+/***/ "./src/js/service/GeneticRocket/RocketDnaGenerator.js":
+/*!************************************************************!*\
+  !*** ./src/js/service/GeneticRocket/RocketDnaGenerator.js ***!
+  \************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return RocketDnaGenerator; });
+/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! p5 */ "./node_modules/p5/lib/p5.min.js");
+/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(p5__WEBPACK_IMPORTED_MODULE_0__);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+var RocketDnaGenerator = /*#__PURE__*/function () {
+  function RocketDnaGenerator() {
+    _classCallCheck(this, RocketDnaGenerator);
+  }
+
+  _createClass(RocketDnaGenerator, null, [{
+    key: "random",
+    value: function random() {
+      var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 100;
+      var dna = [];
+
+      for (var i = 0; i < length; i++) {
+        var direction = p5__WEBPACK_IMPORTED_MODULE_0___default.a.Vector.random2D();
+        direction.setMag(1);
+        dna.push(direction);
+      }
+
+      return dna;
+    }
+  }]);
+
+  return RocketDnaGenerator;
 }();
 
 
@@ -3791,8 +4076,7 @@ var Rocket = /*#__PURE__*/function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return RocketFactory; });
 /* harmony import */ var _Rocket__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Rocket */ "./src/js/service/GeneticRocket/Rocket.js");
-/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! p5 */ "./node_modules/p5/lib/p5.min.js");
-/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(p5__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _RocketDnaGenerator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./RocketDnaGenerator */ "./src/js/service/GeneticRocket/RocketDnaGenerator.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -3811,7 +4095,7 @@ var RocketFactory = /*#__PURE__*/function () {
     key: "random",
     value: function random(position) {
       var lifespan = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 100;
-      return new _Rocket__WEBPACK_IMPORTED_MODULE_0__["default"](position, lifespan);
+      return new _Rocket__WEBPACK_IMPORTED_MODULE_0__["default"](position, lifespan, _RocketDnaGenerator__WEBPACK_IMPORTED_MODULE_1__["default"].random(lifespan));
     }
   }]);
 

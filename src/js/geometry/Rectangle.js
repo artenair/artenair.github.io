@@ -1,4 +1,5 @@
 import Point from "./Point";
+import Edge from "./Edge";
 
 export default class Rectangle {
     constructor(left, top, width, height) {
@@ -29,6 +30,29 @@ export default class Rectangle {
             point.getY() < this._topLeft.getY() ||
             point.getY() > this._bottomRight.getY()
         );
+    }
+
+    getAsEdges() {
+        const topLeft = this.getOrigin();
+        const topRight = new Point(this._topLeft.getX() + this.getWidth(), this._topLeft.getY());
+        const bottomRight = new Point(this._topLeft.getX() + this.getWidth(), this._topLeft.getY() + this.getHeight());
+        const bottomLeft = new Point(this._topLeft.getX(), this._topLeft.getY());
+        return [
+            new Edge(topLeft, topRight),
+            new Edge(topRight, bottomRight),
+            new Edge(bottomRight, bottomLeft),
+            new Edge(bottomLeft, bottomRight),
+        ]
+    }
+
+    intersectsEdge(edge) {
+        return this.getAsEdges().reduce((intersects, rectangleEdge) => {
+            const intersection = edge.getIntersection(rectangleEdge);
+            if(intersection) {
+                console.log(edge, rectangleEdge, intersection);
+            }
+            return intersects || !! intersection;
+        }, false)
     }
 
     getClosestCornerTo(point) {

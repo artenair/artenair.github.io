@@ -13,7 +13,7 @@ export default class GeneticRockets {
 
         let canvas, bounds, obstacles, population;
 
-        const target = new Circle(new Point(width / 2, 100), 100);
+        const target = new Circle(new Point(width / 2, 100), 25);
 
         const sketch = (s) => {
             s.setup = () => {
@@ -27,16 +27,18 @@ export default class GeneticRockets {
                     new Edge(new Point(0, height), new Point(0, 0)),
                 ];
 
+                console.log(bounds);
+
                 const obstacleWidth = 0.6;
                 const xStartOffset = (1 - obstacleWidth) / 2;
                 const xEndOffset = 1 - xStartOffset;
                 const yCenterOffset = 30;
 
                 const startingPositions = [];
-                for(let i = 0; i < 100; i++) {
-                    startingPositions.push(s.createVector(width / 2, height - 10));
+                for(let i = 0; i < 1; i++) {
+                    startingPositions.push(s.createVector(width / 2, height - 150));
                 }
-                population = new Population(startingPositions)
+                population = new Population(startingPositions, 200)
 
                 obstacles = [
                     new Edge(new Point(width * xStartOffset, height / 2 - yCenterOffset), new Point(width *xEndOffset, height / 2 - yCenterOffset)),
@@ -48,6 +50,7 @@ export default class GeneticRockets {
 
             s.draw = () => {
                 s.background(30);
+
                 const printEdges = (edge) => {
                     s.line(
                         edge.getStart().getX(), edge.getStart().getY(),
@@ -62,16 +65,37 @@ export default class GeneticRockets {
                 obstacles.forEach(printEdges);
 
                 s.fill(200);
-                s.circle(target.getCenter().getX(), target.getCenter().getY(), target.getRadius());
+                s.circle(target.getCenter().getX(), target.getCenter().getY(), 2 * target.getRadius());
 
+                s.noFill();
                 for(let rocket of population) {
                     const skeleton = rocket.getSkeleton();
-                    s.rect(
-                        skeleton.getStart().getX(),
-                        skeleton.getStart().getY(),
-                        skeleton.getWidth(),
-                        skeleton.getHeight()
+                    const angle = rocket.getVelocity().heading();
+
+                    if(target.intersectsRectangle(skeleton)) {
+                        rocket.setSuccess();
+                    }
+
+                    const intersectsWithBounds = bounds.reduce( (collided, bound) => {
+                        return collided || skeleton.intersectsEdge(bound);
+                    }, false);
+                    const intersectsWithObstacles = obstacles.reduce( (collided, obstacle) => {
+                        return collided || skeleton.intersectsEdge(obstacle)
+                    }, false);
+
+                    console.log(intersectsWithBounds, intersectsWithObstacles);
+                    rocket.setCollided(
+                        intersectsWithBounds || intersectsWithObstacles
                     );
+
+
+
+                    s.translate(skeleton.getOrigin().getX(), skeleton.getOrigin().getY());
+                    s.rotate(angle);
+                    s.rect(0, 0, skeleton.getWidth(), skeleton.getHeight());
+                    s.rotate(-angle);
+                    s.translate(-skeleton.getOrigin().getX(), -skeleton.getOrigin().getY());
+                    rocket.move();
                 }
             }
         }
