@@ -54,7 +54,7 @@ export default class Boids {
                         (searchCircle, boid) => {
                             const circleCenter = searchCircle.getCenter();
                             const boidSkeleton = boid.getSkeleton();
-                            const nearestVertex = boidSkeleton.getNearestVertexTo(circleCenter);
+                            const nearestVertex = boidSkeleton.getClosestCornerTo(circleCenter);
                             return nearestVertex.getDistance(circleCenter) <= searchCircle.getRadius();
                         }
                     );

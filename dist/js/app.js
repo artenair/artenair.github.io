@@ -86,6 +86,135 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/line-intersect/es/check-intersection.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/line-intersect/es/check-intersection.js ***!
+  \**************************************************************/
+/*! exports provided: checkIntersection */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "checkIntersection", function() { return checkIntersection; });
+var COLINEAR = intersectResult('colinear');
+var PARALLEL = intersectResult('parallel');
+var NONE = intersectResult('none');
+/**
+* Check how two line segments intersect eachother. Line segments are represented
+* as (x1, y1)-(x2, y2) and (x3, y3)-(x4, y4).
+*
+* @param {number} x1
+* @param {number} y1
+* @param {number} x2
+* @param {number} y2
+* @param {number} x3
+* @param {number} y3
+* @param {number} x4
+* @param {number} y4
+* @return {object} Object describing intersection that looks like
+*    {
+*      type: none|parallel|colinear|intersecting,
+*      point: {x, y} - only defined when type == intersecting
+*    }
+*/
+
+function checkIntersection(x1, y1, x2, y2, x3, y3, x4, y4) {
+  var denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+  var numeA = (x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3);
+  var numeB = (x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3);
+
+  if (denom == 0) {
+    if (numeA == 0 && numeB == 0) {
+      return COLINEAR;
+    }
+
+    return PARALLEL;
+  }
+
+  var uA = numeA / denom;
+  var uB = numeB / denom;
+
+  if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
+    return intersecting({
+      x: x1 + uA * (x2 - x1),
+      y: y1 + uA * (y2 - y1)
+    });
+  }
+
+  return NONE;
+}
+
+function intersecting(point) {
+  var result = intersectResult('intersecting');
+  result.point = point;
+  return result;
+}
+
+function intersectResult(type) {
+  return {
+    type: type
+  };
+}
+
+/***/ }),
+
+/***/ "./node_modules/line-intersect/es/colinear-point-within-segment.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/line-intersect/es/colinear-point-within-segment.js ***!
+  \*************************************************************************/
+/*! exports provided: colinearPointWithinSegment */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "colinearPointWithinSegment", function() { return colinearPointWithinSegment; });
+/**
+* Assuming a point is on same line as a line segment, tell if that point is
+* on the line segment.
+*
+* @param {number} pointX - X of point
+* @param {number} pointY - Y of point
+* @param {number} startX - X of line segment start
+* @param {number} startY - Y of line segment start
+* @param {number} endX   - X of line segment end
+* @param {number} endY   - Y of line segment end
+* @return {boolean} true if point is within segment, false otherwise.
+*/
+function colinearPointWithinSegment(pointX, pointY, startX, startY, endX, endY) {
+  if (startX != endX) {
+    if (startX <= pointX && pointX <= endX) return true;
+    if (startX >= pointX && pointX >= endX) return true;
+  } else {
+    if (startY <= pointY && pointY <= endY) return true;
+    if (startY >= pointY && pointY >= endY) return true;
+  }
+
+  return false;
+}
+
+/***/ }),
+
+/***/ "./node_modules/line-intersect/es/index.js":
+/*!*************************************************!*\
+  !*** ./node_modules/line-intersect/es/index.js ***!
+  \*************************************************/
+/*! exports provided: checkIntersection, colinearPointWithinSegment */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _check_intersection__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./check-intersection */ "./node_modules/line-intersect/es/check-intersection.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "checkIntersection", function() { return _check_intersection__WEBPACK_IMPORTED_MODULE_0__["checkIntersection"]; });
+
+/* harmony import */ var _colinear_point_within_segment__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./colinear-point-within-segment */ "./node_modules/line-intersect/es/colinear-point-within-segment.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "colinearPointWithinSegment", function() { return _colinear_point_within_segment__WEBPACK_IMPORTED_MODULE_1__["colinearPointWithinSegment"]; });
+
+
+
+
+
+/***/ }),
+
 /***/ "./node_modules/p5/lib/p5.min.js":
 /*!***************************************!*\
   !*** ./node_modules/p5/lib/p5.min.js ***!
@@ -417,11 +546,13 @@ var Circle = /*#__PURE__*/function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Edge; });
 /* harmony import */ var _Point__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Point */ "./src/js/geometry/Point.js");
+/* harmony import */ var line_intersect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! line-intersect */ "./node_modules/line-intersect/es/index.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
 
 
 
@@ -494,12 +625,12 @@ var Edge = /*#__PURE__*/function () {
       var y2 = this.getEnd().getY();
       var y3 = edge.getStart().getY();
       var y4 = edge.getEnd().getY();
-      var denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-      if (denominator === 0) return null;
-      var t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denominator;
-      var u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denominator;
-      if (t <= 0 || t >= 1 || u <= 0) return null;
-      return new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](x1 + t * (x2 - x1), y1 + t * (y2 - y1));
+
+      var _checkIntersection = Object(line_intersect__WEBPACK_IMPORTED_MODULE_1__["checkIntersection"])(x1, y1, x2, y2, x3, y3, x4, y4),
+          type = _checkIntersection.type,
+          point = _checkIntersection.point;
+
+      return type === "intersecting" ? new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](point.x, point.y) : null;
     }
   }]);
 
@@ -593,11 +724,13 @@ var Point = /*#__PURE__*/function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Rectangle; });
 /* harmony import */ var _Point__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Point */ "./src/js/geometry/Point.js");
+/* harmony import */ var _Edge__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Edge */ "./src/js/geometry/Edge.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
 
 
 
@@ -633,6 +766,28 @@ var Rectangle = /*#__PURE__*/function () {
     key: "contains",
     value: function contains(point) {
       return !(point.getX() < this._topLeft.getX() || point.getX() > this._bottomRight.getX() || point.getY() < this._topLeft.getY() || point.getY() > this._bottomRight.getY());
+    }
+  }, {
+    key: "getAsEdges",
+    value: function getAsEdges() {
+      var topLeft = this.getOrigin();
+      var topRight = new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](this._topLeft.getX() + this.getWidth(), this._topLeft.getY());
+      var bottomRight = new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](this._topLeft.getX() + this.getWidth(), this._topLeft.getY() + this.getHeight());
+      var bottomLeft = new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](this._topLeft.getX(), this._topLeft.getY());
+      return [new _Edge__WEBPACK_IMPORTED_MODULE_1__["default"](topLeft, topRight), new _Edge__WEBPACK_IMPORTED_MODULE_1__["default"](topRight, bottomRight), new _Edge__WEBPACK_IMPORTED_MODULE_1__["default"](bottomRight, bottomLeft), new _Edge__WEBPACK_IMPORTED_MODULE_1__["default"](bottomLeft, bottomRight)];
+    }
+  }, {
+    key: "intersectsEdge",
+    value: function intersectsEdge(edge) {
+      return this.getAsEdges().reduce(function (intersects, rectangleEdge) {
+        var intersection = edge.getIntersection(rectangleEdge);
+
+        if (intersection) {
+          console.log(edge, rectangleEdge, intersection);
+        }
+
+        return intersects || !!intersection;
+      }, false);
     }
   }, {
     key: "getClosestCornerTo",
@@ -674,11 +829,13 @@ var Rectangle = /*#__PURE__*/function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return RegularPolygon; });
 /* harmony import */ var _Point__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Point */ "./src/js/geometry/Point.js");
+/* harmony import */ var _Edge__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Edge */ "./src/js/geometry/Edge.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
 
 
 
@@ -690,25 +847,55 @@ var RegularPolygon = /*#__PURE__*/function () {
     _classCallCheck(this, RegularPolygon);
 
     this._vertices = [];
-    var shiftingAngle = Math.PI * 2 / sides;
-
-    for (var i = 0; i < sides; i++) {
-      this._vertices[i] = new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](radius * Math.cos(startingAngle + i * shiftingAngle) + center.getX(), radius * Math.sin(startingAngle + i * shiftingAngle) + center.getY());
-    }
+    this._center = center;
+    this._radius = radius;
+    this._startingAngle = startingAngle;
+    this._sides = sides;
+    this.updateVertices();
   }
 
   _createClass(RegularPolygon, [{
+    key: "updateVertices",
+    value: function updateVertices() {
+      var shiftingAngle = Math.PI * 2 / this._sides;
+
+      for (var i = 0; i < this._sides; i++) {
+        this._vertices[i] = new _Point__WEBPACK_IMPORTED_MODULE_0__["default"](this._radius * Math.cos(this._startingAngle + i * shiftingAngle) + this._center.x, this._radius * Math.sin(this._startingAngle + i * shiftingAngle) + this._center.y);
+      }
+    }
+  }, {
     key: "getVertices",
     value: function getVertices() {
       return this._vertices.values();
     }
   }, {
-    key: "getNearestVertexTo",
-    value: function getNearestVertexTo(point) {
+    key: "getClosestCornerTo",
+    value: function getClosestCornerTo(point) {
       return this._vertices.reduce(function (nearestVertex, vertex) {
         if (!nearestVertex) return vertex;
         return vertex.getDistance(point) < nearestVertex.getDistance(point) ? vertex : nearestVertex;
       }, null);
+    }
+  }, {
+    key: "getAsEdges",
+    value: function getAsEdges() {
+      var edges = [];
+
+      for (var i = 0; i < this._vertices.length; i++) {
+        var start = this._vertices[i];
+        var end = this._vertices[(i + 1) % this._vertices.length];
+        edges.push(new _Edge__WEBPACK_IMPORTED_MODULE_1__["default"](start, end));
+      }
+
+      return edges;
+    }
+  }, {
+    key: "intersectsEdge",
+    value: function intersectsEdge(edge) {
+      return this.getAsEdges().reduce(function (intersects, rectangleEdge) {
+        var intersection = edge.getIntersection(rectangleEdge);
+        return intersects || !!intersection;
+      }, false);
     }
   }, {
     key: Symbol.iterator,
@@ -879,13 +1066,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_CaveExplorer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/CaveExplorer */ "./src/js/modules/CaveExplorer.js");
 /* harmony import */ var _modules_SpanningTree__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/SpanningTree */ "./src/js/modules/SpanningTree.js");
 /* harmony import */ var _modules_Boids__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/Boids */ "./src/js/modules/Boids.js");
+/* harmony import */ var _modules_GeneticRockets__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modules/GeneticRockets */ "./src/js/modules/GeneticRockets.js");
 
 
 
 
 
 
-var caseStudies = [new _modules_MazeRunner__WEBPACK_IMPORTED_MODULE_0__["default"](), new _modules_ElasticBounce__WEBPACK_IMPORTED_MODULE_1__["default"](), new _modules_RayCasting__WEBPACK_IMPORTED_MODULE_2__["default"](), new _modules_CaveExplorer__WEBPACK_IMPORTED_MODULE_3__["default"](), new _modules_SpanningTree__WEBPACK_IMPORTED_MODULE_4__["default"](), new _modules_Boids__WEBPACK_IMPORTED_MODULE_5__["default"]()];
+
+var caseStudies = [new _modules_MazeRunner__WEBPACK_IMPORTED_MODULE_0__["default"](), new _modules_ElasticBounce__WEBPACK_IMPORTED_MODULE_1__["default"](), new _modules_RayCasting__WEBPACK_IMPORTED_MODULE_2__["default"](), new _modules_CaveExplorer__WEBPACK_IMPORTED_MODULE_3__["default"](), new _modules_SpanningTree__WEBPACK_IMPORTED_MODULE_4__["default"](), new _modules_GeneticRockets__WEBPACK_IMPORTED_MODULE_6__["default"](), new _modules_Boids__WEBPACK_IMPORTED_MODULE_5__["default"]()];
 caseStudies.forEach(function (caseStudy) {
   return caseStudy.run();
 });
@@ -1012,6 +1201,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _geometry_Vector2__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../geometry/Vector2 */ "./src/js/geometry/Vector2.js");
 /* harmony import */ var _geometry_RegularPolygon__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../geometry/RegularPolygon */ "./src/js/geometry/RegularPolygon.js");
 /* harmony import */ var _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../geometry/Rectangle */ "./src/js/geometry/Rectangle.js");
+/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! p5 */ "./node_modules/p5/lib/p5.min.js");
+/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(p5__WEBPACK_IMPORTED_MODULE_4__);
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -1023,38 +1220,51 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 
 
+
 var Boid = /*#__PURE__*/function () {
   /**
-   * @param position Vector2
-   * @param lookingAt number
-   * @param radius number
-   * @param sides number
-   * @params speed number
+   *
+   * @param position
+   * @param lookingAt
+   * @param radius
+   * @param sides
+   * @param speed
+   * @param loopAround
+   * @param boundaries
+   * @param fov
+   * @param maxSteering
    */
   function Boid(position, lookingAt) {
     var radius = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
     var sides = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 3;
-    var speed = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : -1;
+    var speed = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 15;
     var loopAround = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
     var boundaries = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : null;
     var fov = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : 3 * Math.PI / 2;
+    var maxSteering = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : 0.2;
 
     _classCallCheck(this, Boid);
 
-    this.speedMagnitude = speed > 0 ? speed : 5 + Math.random() * 15;
+    this.speedMagnitude = speed > 0 ? speed : 5 + Math.floor(Math.random() * 15);
     this.position = position;
-    this.speed = new _geometry_Vector2__WEBPACK_IMPORTED_MODULE_1__["default"](this.speedMagnitude * Math.cos(lookingAt), this.speedMagnitude * Math.sin(lookingAt));
+    this.speed = new p5__WEBPACK_IMPORTED_MODULE_4___default.a.Vector(this.speedMagnitude * Math.cos(lookingAt), this.speedMagnitude * Math.sin(lookingAt));
     this.sides = 3;
     this.radius = radius;
     this.loopAround = loopAround;
     this.boundaries = boundaries instanceof _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_3__["default"] ? boundaries : null;
     this.fov = fov;
+    this.acceleration = new p5__WEBPACK_IMPORTED_MODULE_4___default.a.Vector(0, 0);
+    this.maxSteering = maxSteering;
   }
 
   _createClass(Boid, [{
     key: "getSkeleton",
     value: function getSkeleton() {
-      return new _geometry_RegularPolygon__WEBPACK_IMPORTED_MODULE_2__["default"](this.sides, this.position, this.radius, this.speed.getTetha());
+      var _this$getPosition = this.getPosition(),
+          x = _this$getPosition.x,
+          y = _this$getPosition.y;
+
+      return new _geometry_RegularPolygon__WEBPACK_IMPORTED_MODULE_2__["default"](this.sides, new _geometry_Point__WEBPACK_IMPORTED_MODULE_0__["default"](x, y), this.radius, this.speed.heading());
     }
   }, {
     key: "getPosition",
@@ -1074,96 +1284,39 @@ var Boid = /*#__PURE__*/function () {
   }, {
     key: "move",
     value: function move() {
-      var dx = this.speed.getX();
-      var dy = this.speed.getY();
-      var nextX = this.position.getX() + dx;
-      var nextY = this.position.getY() + dy;
+      this.speed = this.speed.add(this.acceleration);
+      this.speed.setMag(this.speedMagnitude);
+      this.position.add(this.speed);
 
       if (this.loopAround && this.boundaries instanceof _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_3__["default"]) {
-        if (nextX < this.boundaries.getOrigin().getX()) {
-          dx += this.boundaries.getWidth();
+        if (this.position.x < this.boundaries.getOrigin().getX()) {
+          this.position.x += this.boundaries.getWidth();
         }
 
-        if (nextX > this.boundaries.getDestination().getX()) {
-          dx -= this.boundaries.getWidth();
+        if (this.position.x > this.boundaries.getDestination().getX()) {
+          this.position.x -= this.boundaries.getWidth();
         }
 
-        if (nextY < this.boundaries.getOrigin().getY()) {
-          dy += this.boundaries.getHeight();
+        if (this.position.y < this.boundaries.getOrigin().getY()) {
+          this.position.y += this.boundaries.getHeight();
         }
 
-        if (nextY > this.boundaries.getDestination().getY()) {
-          dy -= this.boundaries.getHeight();
+        if (this.position.y > this.boundaries.getDestination().getY()) {
+          this.position.y -= this.boundaries.getHeight();
         }
       }
 
-      this.position = this.position.add(new _geometry_Vector2__WEBPACK_IMPORTED_MODULE_1__["default"](dx, dy));
       return this;
     }
   }, {
     key: "flock",
     value: function flock(neighbours) {
-      var alignment = this.applyAlignment(neighbours); // const separation = this.applySeparation(neighbours);
-
-      this.speed = alignment;
+      var steering = new p5__WEBPACK_IMPORTED_MODULE_4___default.a.Vector(0, 0);
+      steering.add(this.applySeparation(neighbours));
+      steering.add(this.applyAlignment(neighbours));
+      steering.add(this.applyCohesion(neighbours));
+      this.acceleration = steering;
       return this;
-    }
-    /**
-     * @param neighbours
-     * @returns {Vector2}
-     */
-
-  }, {
-    key: "applySeparation",
-    value: function applySeparation(neighbours) {
-      var _this = this;
-
-      var separation = new _geometry_Vector2__WEBPACK_IMPORTED_MODULE_1__["default"](0, 0);
-      if (neighbours.length <= 1) return separation;
-      neighbours.forEach(function (neighbour) {
-        if (neighbour === _this) return;
-        var direction = separation.add(neighbour.getPosition());
-
-        var magnitude = _this.getPosition().asPoint().getDistance(neighbour.getPosition().asPoint());
-
-        separation = separation.add(direction.multiply(1 / magnitude));
-      });
-      return separation.flipX().flipY();
-    }
-    /**
-     * @param neighbours
-     * @returns {Vector2}
-     */
-
-  }, {
-    key: "applyAlignment",
-    value: function applyAlignment(neighbours) {
-      var _this2 = this;
-
-      var alignment = new _geometry_Vector2__WEBPACK_IMPORTED_MODULE_1__["default"](0, 0);
-      if (neighbours.length <= 1) return alignment;
-      var aggregate = neighbours.reduce(function (accumulator, neighbour) {
-        if (neighbour === _this2) return accumulator;
-        return accumulator.add(neighbour.getSpeed());
-      }, alignment);
-      var avg = aggregate.multiply(1 / neighbours.length - 1);
-      this.debugVector(avg, "Average");
-      var maxSpeedAvg = avg.setMagnitude(this.speedMagnitude);
-      this.debugVector(avg, "Max speed average");
-      var desiredVelocity = maxSpeedAvg.subtract(this.speed);
-      this.debugVector(avg, "Desired velocity");
-      return desiredVelocity;
-    }
-  }, {
-    key: "debugVector",
-    value: function debugVector(vector, message) {
-      var x = vector.getX();
-      var y = vector.getY();
-
-      if (isNaN(x) || isNaN(y) || !isFinite(x) || !isFinite(y)) {
-        console.log(vector);
-        throw new Error(message);
-      }
     }
     /**
      * @param neighbours
@@ -1173,7 +1326,93 @@ var Boid = /*#__PURE__*/function () {
   }, {
     key: "applyCohesion",
     value: function applyCohesion(neighbours) {
-      return new _geometry_Vector2__WEBPACK_IMPORTED_MODULE_1__["default"](0, 0);
+      var cohesion = new p5__WEBPACK_IMPORTED_MODULE_4___default.a.Vector(0, 0);
+      if (neighbours.length <= 1) return cohesion;
+
+      var _iterator = _createForOfIteratorHelper(neighbours),
+          _step;
+
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var neighbour = _step.value;
+          if (neighbour === this) continue;
+          cohesion.add(neighbour.getPosition());
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+
+      cohesion.div(neighbours.length - 1);
+      cohesion.sub(this.getPosition());
+      cohesion.setMag(this.speedMagnitude);
+      cohesion.sub(this.getSpeed());
+      cohesion.limit(this.maxSteering);
+      return cohesion;
+    }
+    /**
+     * @param neighbours
+     * @returns {Vector2}
+     */
+
+  }, {
+    key: "applyAlignment",
+    value: function applyAlignment(neighbours) {
+      var alignment = new p5__WEBPACK_IMPORTED_MODULE_4___default.a.Vector(0, 0);
+      if (neighbours.length <= 1) return alignment;
+
+      var _iterator2 = _createForOfIteratorHelper(neighbours),
+          _step2;
+
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var neighbour = _step2.value;
+          if (neighbour === this) continue;
+          alignment.add(neighbour.getSpeed());
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
+
+      alignment.div(neighbours.length - 1);
+      alignment.setMag(this.speedMagnitude);
+      alignment.sub(this.getSpeed());
+      alignment.limit(this.maxSteering);
+      return alignment;
+    }
+  }, {
+    key: "applySeparation",
+    value: function applySeparation(neighbours) {
+      var separation = new p5__WEBPACK_IMPORTED_MODULE_4___default.a.Vector(0, 0);
+      if (neighbours.length <= 1) return separation;
+
+      var _iterator3 = _createForOfIteratorHelper(neighbours),
+          _step3;
+
+      try {
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var neighbour = _step3.value;
+          if (neighbour === this) continue;
+          var diff = p5__WEBPACK_IMPORTED_MODULE_4___default.a.Vector.sub(this.getPosition(), neighbour.getPosition());
+          var p1 = new _geometry_Point__WEBPACK_IMPORTED_MODULE_0__["default"](this.getPosition().x, this.getPosition().y);
+          var p2 = new _geometry_Point__WEBPACK_IMPORTED_MODULE_0__["default"](neighbour.getPosition().x, neighbour.getPosition().y);
+          diff.div(p1.getSquaredDistance(p2));
+          separation.add(diff);
+        }
+      } catch (err) {
+        _iterator3.e(err);
+      } finally {
+        _iterator3.f();
+      }
+
+      separation.div(neighbours.length - 1);
+      separation.setMag(this.speedMagnitude);
+      separation.sub(this.getSpeed());
+      separation.limit(this.maxSteering);
+      return separation;
     }
   }]);
 
@@ -1766,15 +2005,16 @@ var Boids = /*#__PURE__*/function () {
       var width = Math.floor(parent.clientWidth);
       var height = Math.floor(parent.clientHeight);
       var boids = [];
-      var personalSpace = 200;
+      var personalSpace = 50;
+      var populationSize = 150;
 
       var sketch = function sketch(s) {
         s.setup = function () {
           canvas = s.createCanvas(width, height);
           canvas.parent(parent);
 
-          for (var i = 0; i < 50; i++) {
-            boids.push(new _model_Boid__WEBPACK_IMPORTED_MODULE_1__["default"](new _geometry_Vector2__WEBPACK_IMPORTED_MODULE_5__["default"](Math.random() * s.width, Math.random() * s.height), 2 * Math.PI * Math.random(), 5 * Math.random() + 7, 3, 2 * Math.random() + 3, true, new _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_3__["default"](0, 0, s.width, s.height)));
+          for (var i = 0; i < populationSize; i++) {
+            boids.push(new _model_Boid__WEBPACK_IMPORTED_MODULE_1__["default"](new p5__WEBPACK_IMPORTED_MODULE_0___default.a.Vector(Math.random() * s.width, Math.random() * s.height), 2 * Math.PI * Math.random(), 10, 3, 5, true, new _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_3__["default"](0, 0, s.width, s.height)));
           }
         };
 
@@ -1783,7 +2023,11 @@ var Boids = /*#__PURE__*/function () {
           s.fill(255);
           var quadTree = new _service_QuadMap__WEBPACK_IMPORTED_MODULE_4__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_2__["default"](0, 0), s.width, s.height, 4);
           boids.forEach(function (boid) {
-            return quadTree.add(boid.getPosition().asPoint(), boid);
+            var _boid$getPosition = boid.getPosition(),
+                x = _boid$getPosition.x,
+                y = _boid$getPosition.y;
+
+            quadTree.add(new _geometry_Point__WEBPACK_IMPORTED_MODULE_2__["default"](x, y), boid);
           });
 
           var _iterator = _createForOfIteratorHelper(boids),
@@ -1792,21 +2036,35 @@ var Boids = /*#__PURE__*/function () {
           try {
             for (_iterator.s(); !(_step = _iterator.n()).done;) {
               var boid = _step.value;
-              var neighbours = quadTree.near(boid.getPosition().asPoint(), personalSpace, function (searchCircle, boid) {
+
+              var _boid$getPosition2 = boid.getPosition(),
+                  x = _boid$getPosition2.x,
+                  y = _boid$getPosition2.y;
+
+              var neighbours = quadTree.near(new _geometry_Point__WEBPACK_IMPORTED_MODULE_2__["default"](x, y), personalSpace, function (searchCircle, boid) {
                 var circleCenter = searchCircle.getCenter();
                 var boidSkeleton = boid.getSkeleton();
-                var nearestVertex = boidSkeleton.getNearestVertexTo(circleCenter);
+                var nearestVertex = boidSkeleton.getClosestCornerTo(circleCenter);
                 return nearestVertex.getDistance(circleCenter) <= searchCircle.getRadius();
               });
               boid.flock(neighbours).move();
-              s.circle(boid.getPosition().getX(), boid.getPosition().getY(), boid.getRadius());
-              /**
               s.beginShape();
-              for(let vertex of boid.getSkeleton()) {
+
+              var _iterator2 = _createForOfIteratorHelper(boid.getSkeleton()),
+                  _step2;
+
+              try {
+                for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+                  var vertex = _step2.value;
                   s.vertex(vertex.getX(), vertex.getY());
+                }
+              } catch (err) {
+                _iterator2.e(err);
+              } finally {
+                _iterator2.f();
               }
+
               s.endShape(s.CLOSE);
-              */
             }
           } catch (err) {
             _iterator.e(err);
@@ -2124,6 +2382,216 @@ var ElasticBounce = /*#__PURE__*/function () {
   }]);
 
   return ElasticBounce;
+}();
+
+
+
+/***/ }),
+
+/***/ "./src/js/modules/GeneticRockets.js":
+/*!******************************************!*\
+  !*** ./src/js/modules/GeneticRockets.js ***!
+  \******************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return GeneticRockets; });
+/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! p5 */ "./node_modules/p5/lib/p5.min.js");
+/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(p5__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _geometry_Point__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../geometry/Point */ "./src/js/geometry/Point.js");
+/* harmony import */ var _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../geometry/Edge */ "./src/js/geometry/Edge.js");
+/* harmony import */ var _geometry_Circle__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../geometry/Circle */ "./src/js/geometry/Circle.js");
+/* harmony import */ var _service_GeneticRocket_Population__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../service/GeneticRocket/Population */ "./src/js/service/GeneticRocket/Population.js");
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+
+
+
+
+var GeneticRockets = /*#__PURE__*/function () {
+  function GeneticRockets() {
+    _classCallCheck(this, GeneticRockets);
+  }
+
+  _createClass(GeneticRockets, [{
+    key: "run",
+    value: function run() {
+      var parent = document.querySelector("#geneticRockets");
+      if (!parent) return;
+      var width = Math.floor(parent.clientWidth);
+      var height = Math.floor(parent.clientHeight);
+      var canvas, bounds, obstacles, population, lifespan;
+      var generation = 1,
+          bestGeneration = 0,
+          bestSuccess = 0,
+          lastSuccess = 0;
+      var populationSize = 300;
+      lifespan = 200;
+      var target = new _geometry_Circle__WEBPACK_IMPORTED_MODULE_3__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width / 2, 100), 25);
+
+      var sketch = function sketch(s) {
+        s.setup = function () {
+          canvas = s.createCanvas(width, height);
+          canvas.parent(parent);
+          bounds = [new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](0, 0), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width, 0)), new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width, 0), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width, height)), new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width, height), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](0, height)), new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](0, height), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](0, 0))];
+          var obstacleWidth = 0.3;
+          var xStartOffset = (1 - obstacleWidth) / 2;
+          var xEndOffset = 1 - xStartOffset;
+          var yCenterOffset = 30;
+          var yCenter = height / 2;
+          population = new _service_GeneticRocket_Population__WEBPACK_IMPORTED_MODULE_4__["default"](s.generateStartingPositions(populationSize), target, lifespan);
+          obstacles = [new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xStartOffset, yCenter - yCenterOffset), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xEndOffset, yCenter - yCenterOffset)), new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xEndOffset, yCenter - yCenterOffset), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xEndOffset, yCenter + yCenterOffset)), new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xEndOffset, yCenter + yCenterOffset), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xStartOffset, yCenter + yCenterOffset)), new _geometry_Edge__WEBPACK_IMPORTED_MODULE_2__["default"](new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xStartOffset, yCenter + yCenterOffset), new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](width * xStartOffset, yCenter - yCenterOffset))];
+        };
+
+        s.generateStartingPositions = function () {
+          var populationSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 100;
+          var startingPositions = [];
+
+          for (var i = 0; i < populationSize; i++) {
+            startingPositions.push(s.createVector(width / 2, height - 150));
+          }
+
+          return startingPositions;
+        };
+
+        s.draw = function () {
+          s.background(30);
+
+          var printEdges = function printEdges(edge) {
+            s.line(edge.getStart().getX(), edge.getStart().getY(), edge.getEnd().getX(), edge.getEnd().getY());
+          };
+
+          s.strokeWeight(2);
+          s.stroke(30);
+          bounds.forEach(printEdges);
+          s.stroke(200);
+          obstacles.forEach(printEdges);
+          s.fill(200);
+          s.circle(target.getCenter().getX(), target.getCenter().getY(), 2 * target.getRadius());
+          s.noFill();
+          var hasFinished = true;
+          var successes = 0;
+          var collisions = 0;
+
+          var _loop = function _loop(i) {
+            var rocket = population.get(i);
+            var skeleton = rocket.getSkeleton();
+
+            if (target.intersectsRectangle(skeleton)) {
+              rocket.setSuccess();
+            }
+
+            var collided = bounds.reduce(function (collided, bound) {
+              return collided || skeleton.intersectsEdge(bound);
+            }, obstacles.reduce(function (collided, obstacle) {
+              return collided || skeleton.intersectsEdge(obstacle);
+            }, false));
+            rocket.setCollided(collided);
+            s.stroke(255);
+            hasFinished = hasFinished && !rocket.isAlive();
+
+            if (!rocket.isAlive()) {
+              s.stroke(50);
+            }
+
+            if (rocket.hasCollided()) {
+              s.stroke(255, 0, 0);
+              collisions++;
+            }
+
+            if (rocket.hasSucceeded()) {
+              s.stroke(0, 255, 0);
+              successes++;
+            }
+
+            if (i === 0 && generation > 1) {
+              s.stroke(255, 0, 255);
+            }
+
+            s.beginShape();
+
+            var _iterator = _createForOfIteratorHelper(rocket.getSkeleton()),
+                _step;
+
+            try {
+              for (_iterator.s(); !(_step = _iterator.n()).done;) {
+                var vertex = _step.value;
+                s.vertex(vertex.getX(), vertex.getY());
+              }
+            } catch (err) {
+              _iterator.e(err);
+            } finally {
+              _iterator.f();
+            }
+
+            s.endShape(s.CLOSE);
+            rocket.move();
+          };
+
+          for (var i = 0; i < population.size(); i++) {
+            _loop(i);
+          }
+
+          s.noStroke();
+          s.fill(255, 25);
+          s.rect(25, height - 130, 500, 120);
+          s.fill(255);
+          s.textSize(32);
+          s.text("Generation : ".concat(generation), 50, height - 88);
+          s.textSize(16);
+          var successRate = Math.floor(10000 * successes / population.size()) / 100;
+          var collisionRate = Math.floor(10000 * collisions / population.size()) / 100;
+          s.text("Success rate : ".concat(successRate, "% - Collision rate : ").concat(collisionRate, "%"), 50, height - 56);
+          s.text("Best success rate : ".concat(bestSuccess, "% in generation ").concat(bestGeneration), 50, height - 40);
+          s.text("Last success rate : ".concat(lastSuccess, "%"), 50, height - 24);
+
+          if (hasFinished) {
+            var fitnessFunction = function fitnessFunction(rocket, target) {
+              var p1 = new _geometry_Point__WEBPACK_IMPORTED_MODULE_1__["default"](rocket.getPosition().x, rocket.getPosition().y);
+              var p2 = target.getCenter();
+              var maxBase = s.dist(0, 0, s.width, s.height);
+              var base = 1 / Math.pow(p1.getDistance(p2), 2);
+              var collisionComponent = 1; //rocket.hasCollided() ? 0.1 : 1;
+
+              var successComponent = 1; //rocket.hasSucceeded() ? 10 : 1;
+
+              var ageComponent = 1; //s.map(rocket.getRemainingLife(), 0, lifespan, 0.1, 10);
+
+              return base * collisionComponent * successComponent * ageComponent;
+            };
+
+            population.next(fitnessFunction, s.generateStartingPositions(populationSize));
+
+            if (successRate > bestSuccess) {
+              bestSuccess = successRate;
+              bestGeneration = generation;
+            }
+
+            lastSuccess = successRate;
+            generation++;
+          }
+        };
+      };
+
+      var sketchInstance = new p5__WEBPACK_IMPORTED_MODULE_0___default.a(sketch);
+    }
+  }]);
+
+  return GeneticRockets;
 }();
 
 
@@ -3963,6 +4431,420 @@ var WallRestorer = /*#__PURE__*/function () {
   }]);
 
   return WallRestorer;
+}();
+
+
+
+/***/ }),
+
+/***/ "./src/js/service/GeneticRocket/Population.js":
+/*!****************************************************!*\
+  !*** ./src/js/service/GeneticRocket/Population.js ***!
+  \****************************************************/
+/*! exports provided: default, FitnessElement */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Population; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FitnessElement", function() { return FitnessElement; });
+/* harmony import */ var _RocketFactory__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./RocketFactory */ "./src/js/service/GeneticRocket/RocketFactory.js");
+/* harmony import */ var _Rocket__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Rocket */ "./src/js/service/GeneticRocket/Rocket.js");
+/* harmony import */ var _RocketDnaGenerator__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./RocketDnaGenerator */ "./src/js/service/GeneticRocket/RocketDnaGenerator.js");
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+
+
+var Population = /*#__PURE__*/function () {
+  function Population(positions, target) {
+    var lifespan = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 100;
+
+    _classCallCheck(this, Population);
+
+    this._population = [];
+    this._target = target;
+    this._lifespan = lifespan;
+
+    var _iterator = _createForOfIteratorHelper(positions),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var position = _step.value;
+
+        this._population.push(_RocketFactory__WEBPACK_IMPORTED_MODULE_0__["default"].random(position, lifespan));
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+  }
+
+  _createClass(Population, [{
+    key: "size",
+    value: function size() {
+      return this._population.length;
+    }
+  }, {
+    key: "get",
+    value: function get(index) {
+      return this._population[index];
+    }
+  }, {
+    key: "next",
+    value: function next(fitness, positions) {
+      var fitnesses = this._calculateFitnesses(fitness);
+
+      var bestOfGeneration = fitnesses.reduce(function (best, candidate) {
+        if (best === null) return candidate;
+        return candidate.getFitness() > best.getFitness() ? candidate : best;
+      }, null).getElement();
+
+      var breedingPool = this._generateBreedingPool(fitnesses);
+
+      var nextGeneration = [new _Rocket__WEBPACK_IMPORTED_MODULE_1__["default"](positions[0], this._lifespan, bestOfGeneration.getDna())];
+
+      for (var i = 1; i < this._population.length; i++) {
+        var _this$_findMates = this._findMates(breedingPool),
+            mother = _this$_findMates.mother,
+            father = _this$_findMates.father;
+
+        var genes = _RocketDnaGenerator__WEBPACK_IMPORTED_MODULE_2__["default"].crossOver(mother, father);
+        nextGeneration.push(new _Rocket__WEBPACK_IMPORTED_MODULE_1__["default"](positions[i], this._lifespan, _RocketDnaGenerator__WEBPACK_IMPORTED_MODULE_2__["default"].mutate(genes)));
+      }
+
+      this._population = nextGeneration;
+    }
+  }, {
+    key: "_findMates",
+    value: function _findMates(breedingPool) {
+      var a = Math.floor(Math.random() * breedingPool.length);
+      var b = Math.floor(Math.random() * breedingPool.length);
+      return {
+        father: breedingPool[a].getDna(),
+        mother: breedingPool[b].getDna()
+      };
+    }
+  }, {
+    key: "_calculateFitnesses",
+    value: function _calculateFitnesses(fitness) {
+      var _this = this;
+
+      var totalFitness = 0;
+
+      var fitnesses = this._population.map(function (rocket) {
+        var currentFitness = fitness(rocket, _this._target);
+        totalFitness += currentFitness;
+        return new FitnessElement(rocket, currentFitness);
+      });
+
+      fitnesses.forEach(function (fitness) {
+        fitness.setFitness(100 * fitness.getFitness() / totalFitness);
+      });
+      return fitnesses;
+    }
+  }, {
+    key: "_generateBreedingPool",
+    value: function _generateBreedingPool(fitnesses) {
+      var breedingPool = [];
+
+      var _iterator2 = _createForOfIteratorHelper(fitnesses),
+          _step2;
+
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var pair = _step2.value;
+
+          for (var n = 0; n < pair.getFitness(); n++) {
+            breedingPool.push(pair.getElement());
+          }
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
+
+      return breedingPool;
+    }
+  }, {
+    key: Symbol.iterator,
+    value: function value() {
+      return this._population.values();
+    }
+  }]);
+
+  return Population;
+}();
+
+
+var FitnessElement = /*#__PURE__*/function () {
+  function FitnessElement(element, fitness) {
+    _classCallCheck(this, FitnessElement);
+
+    this._fitness = fitness;
+    this._element = element;
+  }
+
+  _createClass(FitnessElement, [{
+    key: "getElement",
+    value: function getElement() {
+      return this._element;
+    }
+  }, {
+    key: "getFitness",
+    value: function getFitness() {
+      return this._fitness;
+    }
+  }, {
+    key: "setFitness",
+    value: function setFitness(fitness) {
+      this._fitness = fitness;
+    }
+  }]);
+
+  return FitnessElement;
+}();
+
+/***/ }),
+
+/***/ "./src/js/service/GeneticRocket/Rocket.js":
+/*!************************************************!*\
+  !*** ./src/js/service/GeneticRocket/Rocket.js ***!
+  \************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Rocket; });
+/* harmony import */ var _geometry_Rectangle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../geometry/Rectangle */ "./src/js/geometry/Rectangle.js");
+/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! p5 */ "./node_modules/p5/lib/p5.min.js");
+/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(p5__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _geometry_RegularPolygon__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../geometry/RegularPolygon */ "./src/js/geometry/RegularPolygon.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+
+
+var Rocket = /*#__PURE__*/function () {
+  function Rocket(position, lifespan, dna) {
+    var speedMagnitude = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 15;
+
+    _classCallCheck(this, Rocket);
+
+    this._dna = dna;
+    this._age = 0;
+    this._lifespan = lifespan;
+    this._speedMagnitude = speedMagnitude;
+    this._speed = new p5__WEBPACK_IMPORTED_MODULE_1___default.a.Vector(0, 0);
+    this._position = position;
+    this._collided = false;
+    this._success = false;
+  }
+
+  _createClass(Rocket, [{
+    key: "getRemainingLife",
+    value: function getRemainingLife() {
+      return this._lifespan - this._age;
+    }
+  }, {
+    key: "getDna",
+    value: function getDna() {
+      return this._dna;
+    }
+  }, {
+    key: "getPosition",
+    value: function getPosition() {
+      return this._position;
+    }
+  }, {
+    key: "setSuccess",
+    value: function setSuccess() {
+      var success = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+      this._success = success;
+    }
+  }, {
+    key: "setCollided",
+    value: function setCollided() {
+      var collided = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+      this._collided = collided;
+    }
+  }, {
+    key: "getSkeleton",
+    value: function getSkeleton() {
+      return new _geometry_RegularPolygon__WEBPACK_IMPORTED_MODULE_2__["default"](3, this._position, 10, this._speed.heading());
+    }
+  }, {
+    key: "getVelocity",
+    value: function getVelocity() {
+      return this._speed;
+    }
+  }, {
+    key: "isAlive",
+    value: function isAlive() {
+      return this._age < this._lifespan && this._age < this._dna.length && !this._collided && !this._success;
+    }
+  }, {
+    key: "hasCollided",
+    value: function hasCollided() {
+      return this._collided;
+    }
+  }, {
+    key: "hasSucceeded",
+    value: function hasSucceeded() {
+      return this._success;
+    }
+  }, {
+    key: "move",
+    value: function move() {
+      if (!this.isAlive()) return;
+
+      this._speed.add(this._dna[this._age++]);
+
+      this._speed.limit(this._speedMagnitude);
+
+      this._position.add(this._speed);
+    }
+  }]);
+
+  return Rocket;
+}();
+
+
+
+/***/ }),
+
+/***/ "./src/js/service/GeneticRocket/RocketDnaGenerator.js":
+/*!************************************************************!*\
+  !*** ./src/js/service/GeneticRocket/RocketDnaGenerator.js ***!
+  \************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return RocketDnaGenerator; });
+/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! p5 */ "./node_modules/p5/lib/p5.min.js");
+/* harmony import */ var p5__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(p5__WEBPACK_IMPORTED_MODULE_0__);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+var RocketDnaGenerator = /*#__PURE__*/function () {
+  function RocketDnaGenerator() {
+    _classCallCheck(this, RocketDnaGenerator);
+  }
+
+  _createClass(RocketDnaGenerator, null, [{
+    key: "random",
+    value: function random() {
+      var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 100;
+      var dna = [];
+
+      for (var i = 0; i < length; i++) {
+        dna.push(RocketDnaGenerator.generateRandomGene());
+      }
+
+      return dna;
+    }
+  }, {
+    key: "generateRandomGene",
+    value: function generateRandomGene() {
+      var gene = p5__WEBPACK_IMPORTED_MODULE_0___default.a.Vector.random2D();
+      gene.setMag(1);
+      return gene;
+    }
+  }, {
+    key: "crossOver",
+    value: function crossOver(first, second) {
+      var dna = [];
+      var shortest = first.length < second.length ? first : second;
+      var longest = first.length >= second.length ? first : second;
+
+      for (var i = 0; i < shortest.length; i++) {
+        dna.push(Math.random() >= 0.5 ? shortest[i] : longest[i]);
+      }
+
+      for (var _i = shortest.length; _i < longest.length; _i++) {
+        dna.push(longest[_i]);
+      }
+
+      return dna;
+    }
+  }, {
+    key: "mutate",
+    value: function mutate(dna) {
+      return dna.map(function (gene) {
+        return Math.random() < 0.01 ? RocketDnaGenerator.generateRandomGene() : gene;
+      });
+    }
+  }]);
+
+  return RocketDnaGenerator;
+}();
+
+
+
+/***/ }),
+
+/***/ "./src/js/service/GeneticRocket/RocketFactory.js":
+/*!*******************************************************!*\
+  !*** ./src/js/service/GeneticRocket/RocketFactory.js ***!
+  \*******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return RocketFactory; });
+/* harmony import */ var _Rocket__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Rocket */ "./src/js/service/GeneticRocket/Rocket.js");
+/* harmony import */ var _RocketDnaGenerator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./RocketDnaGenerator */ "./src/js/service/GeneticRocket/RocketDnaGenerator.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+
+var RocketFactory = /*#__PURE__*/function () {
+  function RocketFactory() {
+    _classCallCheck(this, RocketFactory);
+  }
+
+  _createClass(RocketFactory, null, [{
+    key: "random",
+    value: function random(position) {
+      var lifespan = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 100;
+      return new _Rocket__WEBPACK_IMPORTED_MODULE_0__["default"](position, lifespan, _RocketDnaGenerator__WEBPACK_IMPORTED_MODULE_1__["default"].random(lifespan));
+    }
+  }]);
+
+  return RocketFactory;
 }();
 
 
