@@ -1,5 +1,6 @@
 import Rectangle from "../../geometry/Rectangle";
 import p5 from "p5";
+import RegularPolygon from "../../geometry/RegularPolygon";
 
 export default class Rocket {
 
@@ -14,6 +15,18 @@ export default class Rocket {
         this._success = false;
     }
 
+    getRemainingLife() {
+        return this._lifespan - this._age;
+    }
+
+    getDna() {
+        return this._dna;
+    }
+
+    getPosition() {
+        return this._position;
+    }
+
     setSuccess(success  = true) {
         this._success = success;
     }
@@ -23,11 +36,11 @@ export default class Rocket {
     }
 
     getSkeleton() {
-        return new Rectangle(
-            this._position.x - 5,
-            this._position.y - 5,
+        return new RegularPolygon(
+            3,
+            this._position,
             10,
-            10
+            this._speed.heading()
         );
     }
 
@@ -40,6 +53,14 @@ export default class Rocket {
                 this._age < this._dna.length &&
                 !this._collided &&
                 !this._success;
+    }
+
+    hasCollided() {
+        return this._collided;
+    }
+
+    hasSucceeded() {
+        return this._success;
     }
 
     move() {

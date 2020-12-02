@@ -64,6 +64,6 @@ export default class Edge {
         const y4 = edge.getEnd().getY();
 
         const {type, point} = checkIntersection(x1,y1,x2,y2,x3,y3,x4,y4);
-        return type === "intersection" ? new Point(point.x, point.y) : null;
+        return type === "intersecting" ? new Point(point.x, point.y) : null;
     }
 }
