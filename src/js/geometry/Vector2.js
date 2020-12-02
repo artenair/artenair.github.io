@@ -16,6 +16,14 @@ export default class Vector2 {
         return this._y;
     }
 
+    getX() {
+        return this._x;
+    }
+
+    getY() {
+        return this._y;
+    }
+
     getTetha() {
         if(!this._tetha) {
             this._tetha = Math.atan2(this._y, this._x);
@@ -28,6 +36,13 @@ export default class Vector2 {
             this._length = Math.sqrt(this._x * this._x + this._y * this._y);
         }
         return this._length;
+    }
+
+    setMagnitude(magnitude) {
+        this._x = magnitude * Math.cos(this.getTetha()) ;
+        this._y = magnitude * Math.sin(this.getTetha());
+        this._length = magnitude;
+        return this;
     }
 
 
@@ -46,6 +61,13 @@ export default class Vector2 {
             this._x + point.getX(),
             this._y + point.getY(),
         )
+    }
+
+    asPoint() {
+        return new Point(
+            this._x,
+            this._y
+        );
     }
 
     flipX() {
@@ -76,6 +98,20 @@ export default class Vector2 {
         return new Vector2(
             this.getXComponent() + vector.getXComponent(),
             this.getYComponent() + vector.getYComponent(),
+        )
+    }
+
+    subtract(vector) {
+        return new Vector2(
+            this.getXComponent() - vector.getXComponent(),
+            this.getYComponent() - vector.getYComponent(),
+        )
+    }
+
+    multiply(multiplier) {
+        return new Vector2(
+            this.getXComponent() * multiplier,
+            this.getYComponent() * multiplier,
         )
     }
 
