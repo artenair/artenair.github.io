@@ -2,29 +2,36 @@ import Point from "../geometry/Point";
 import Vector2 from "../geometry/Vector2";
 import RegularPolygon from "../geometry/RegularPolygon";
 import Rectangle from "../geometry/Rectangle";
+import p5 from "p5";
 
 export default class Boid {
 
     /**
-     * @param position Vector2
-     * @param lookingAt number
-     * @param radius number
-     * @param sides number
-     * @params speed number
+     *
+     * @param position
+     * @param lookingAt
+     * @param radius
+     * @param sides
+     * @param speed
+     * @param loopAround
+     * @param boundaries
+     * @param fov
+     * @param maxSteering
      */
     constructor(
         position,
         lookingAt,
         radius = 10,
         sides = 3,
-        speed = -1,
+        speed = 15,
         loopAround = false,
         boundaries = null,
-        fov = 3 * Math.PI / 2
+        fov = 3 * Math.PI / 2,
+        maxSteering = 0.2
     ) {
-        this.speedMagnitude = speed > 0 ? speed : 5 + Math.random() * 15;
+        this.speedMagnitude = speed > 0 ? speed : 5 + Math.floor(Math.random() * 15);
         this.position = position;
-        this.speed = new Vector2(
+        this.speed = new p5.Vector(
             this.speedMagnitude * Math.cos(lookingAt),
             this.speedMagnitude * Math.sin(lookingAt)
         );
@@ -33,10 +40,19 @@ export default class Boid {
         this.loopAround = loopAround;
         this.boundaries = boundaries instanceof Rectangle ? boundaries : null;
         this.fov = fov;
+        this.acceleration = new p5.Vector(0,0);
+        this.maxSteering = maxSteering;
     }
 
     getSkeleton() {
-        return new RegularPolygon(this.sides, this.position, this.radius, this.speed.getTetha());
+        const {x,y} = this.getPosition();
+
+        return new RegularPolygon(
+            this.sides,
+            new Point(x, y),
+            this.radius,
+            this.speed.heading()
+        );
     }
 
     getPosition() {
@@ -52,83 +68,34 @@ export default class Boid {
     }
 
     move() {
-        let dx = this.speed.getX();
-        let dy = this.speed.getY();
-        let nextX = this.position.getX() + dx;
-        let nextY = this.position.getY() + dy;
+        this.speed = this.speed.add(this.acceleration);
+        this.speed.setMag(this.speedMagnitude);
+        this.position.add(this.speed);
 
         if(this.loopAround && this.boundaries instanceof Rectangle) {
-            if(nextX < this.boundaries.getOrigin().getX()) {
-                dx += this.boundaries.getWidth();
+            if(this.position.x < this.boundaries.getOrigin().getX()) {
+                this.position.x += this.boundaries.getWidth();
             }
-            if(nextX > this.boundaries.getDestination().getX()) {
-                dx -= this.boundaries.getWidth();
+            if(this.position.x > this.boundaries.getDestination().getX()) {
+                this.position.x -= this.boundaries.getWidth();
             }
-            if(nextY < this.boundaries.getOrigin().getY()) {
-                dy += this.boundaries.getHeight();
+            if(this.position.y < this.boundaries.getOrigin().getY()) {
+                this.position.y += this.boundaries.getHeight();
             }
-            if(nextY > this.boundaries.getDestination().getY()) {
-                dy -= this.boundaries.getHeight();
+            if(this.position.y > this.boundaries.getDestination().getY()) {
+                this.position.y -= this.boundaries.getHeight();
             }
         }
-        this.position = this.position.add(new Vector2(dx, dy));
         return this;
     }
 
     flock(neighbours) {
-        const alignment = this.applyAlignment(neighbours);
-        // const separation = this.applySeparation(neighbours);
-        this.speed = alignment;
+        let steering = new p5.Vector(0,0);
+        steering.add(this.applySeparation(neighbours));
+        steering.add(this.applyAlignment(neighbours));
+        steering.add(this.applyCohesion(neighbours));
+        this.acceleration = steering;
         return this;
-    }
-
-    /**
-     * @param neighbours
-     * @returns {Vector2}
-     */
-    applySeparation(neighbours) {
-        let separation = new Vector2(0,0);
-        if(neighbours.length <= 1) return separation;
-        neighbours.forEach( neighbour => {
-           if(neighbour === this) return;
-            const direction = separation.add(neighbour.getPosition());
-            const magnitude = this.getPosition().asPoint().getDistance(neighbour.getPosition().asPoint());
-            separation = separation.add(
-                direction.multiply(1 / magnitude)
-            );
-        });
-        return separation.flipX().flipY();
-    }
-
-    /**
-     * @param neighbours
-     * @returns {Vector2}
-     */
-    applyAlignment(neighbours) {
-        let alignment = new Vector2(0,0);
-        if(neighbours.length <= 1) return alignment;
-        const aggregate = neighbours.reduce( (accumulator, neighbour) => {
-            if(neighbour === this) return accumulator;
-            return accumulator.add(
-                neighbour.getSpeed()
-            );
-        }, alignment);
-        const avg = aggregate.multiply(1 / neighbours.length - 1);
-        this.debugVector(avg, "Average");
-        const maxSpeedAvg = avg.setMagnitude(this.speedMagnitude);
-        this.debugVector(avg, "Max speed average");
-        const desiredVelocity = maxSpeedAvg.subtract(this.speed);
-        this.debugVector(avg, "Desired velocity");
-        return desiredVelocity;
-    }
-
-    debugVector(vector, message) {
-        const x = vector.getX();
-        const y = vector.getY();
-        if(isNaN(x) || isNaN(y) || !isFinite(x) || !isFinite(y)) {
-            console.log(vector);
-            throw new Error(message);
-        }
     }
 
     /**
@@ -136,7 +103,53 @@ export default class Boid {
      * @returns {Vector2}
      */
     applyCohesion(neighbours) {
-        return new Vector2(0,0);
+        let cohesion = new p5.Vector(0,0);
+        if(neighbours.length <= 1) return cohesion;
+        for(let neighbour of neighbours) {
+            if(neighbour === this) continue;
+            cohesion.add(neighbour.getPosition());
+        }
+        cohesion.div(neighbours.length - 1);
+        cohesion.sub(this.getPosition());
+        cohesion.setMag(this.speedMagnitude);
+        cohesion.sub(this.getSpeed());
+        cohesion.limit(this.maxSteering);
+        return cohesion;
     }
 
+    /**
+     * @param neighbours
+     * @returns {Vector2}
+     */
+    applyAlignment(neighbours) {
+        let alignment = new p5.Vector(0,0);
+        if(neighbours.length <= 1) return alignment;
+        for(let neighbour of neighbours) {
+            if(neighbour === this) continue;
+            alignment.add(neighbour.getSpeed());
+        }
+        alignment.div(neighbours.length - 1);
+        alignment.setMag(this.speedMagnitude);
+        alignment.sub(this.getSpeed());
+        alignment.limit(this.maxSteering);
+        return alignment;
+    }
+
+    applySeparation(neighbours) {
+        let separation = new p5.Vector(0,0);
+        if(neighbours.length <= 1) return separation;
+        for(let neighbour of neighbours) {
+            if(neighbour === this) continue;
+            const diff = p5.Vector.sub(this.getPosition(), neighbour.getPosition());
+            const p1 = new Point(this.getPosition().x, this.getPosition().y);
+            const p2 = new Point(neighbour.getPosition().x, neighbour.getPosition().y);
+            diff.div(p1.getSquaredDistance(p2));
+            separation.add(diff);
+        }
+        separation.div(neighbours.length - 1);
+        separation.setMag(this.speedMagnitude);
+        separation.sub(this.getSpeed());
+        separation.limit(this.maxSteering);
+        return separation;
+    }
 }

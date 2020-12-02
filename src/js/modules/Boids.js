@@ -13,22 +13,23 @@ export default class Boids {
         const width = Math.floor(parent.clientWidth);
         const height = Math.floor(parent.clientHeight);
         const boids = [];
-        const personalSpace = 200;
+        const personalSpace = 50;
+        const populationSize = 150;
 
         const sketch = (s) => {
             s.setup = () => {
                 canvas = s.createCanvas(width,height);
                 canvas.parent(parent);
-                for(let i = 0; i < 50; i++) {
+                for(let i = 0; i < populationSize; i++) {
                     boids.push(new Boid(
-                        new Vector2(
+                        new p5.Vector(
                             Math.random() * s.width,
                             Math.random() * s.height
                         ),
                         2 * Math.PI * Math.random(),
-                        5 * Math.random() + 7,
+                        10,
                         3,
-                        2 * Math.random() + 3,
+                        5,
                         true,
                         new Rectangle(0,0, s.width, s.height)
                     ));
@@ -40,12 +41,15 @@ export default class Boids {
                 s.fill(255);
 
                 const quadTree = new QuadMap(new Point(0,0), s.width, s.height, 4);
-                boids.forEach( boid => quadTree.add(boid.getPosition().asPoint(), boid));
+                boids.forEach( boid => {
+                    const {x,y} = boid.getPosition();
+                    quadTree.add( new Point(x, y), boid)
+                });
 
                 for(let boid of boids) {
-
+                    const {x,y} = boid.getPosition();
                     const neighbours = quadTree.near(
-                        boid.getPosition().asPoint(),
+                        new Point(x, y),
                         personalSpace,
                         (searchCircle, boid) => {
                             const circleCenter = searchCircle.getCenter();
@@ -55,14 +59,11 @@ export default class Boids {
                         }
                     );
                     boid.flock(neighbours).move();
-                    s.circle(boid.getPosition().getX(),boid.getPosition().getY(), boid.getRadius());
-                    /**
                     s.beginShape();
                     for(let vertex of boid.getSkeleton()) {
                         s.vertex(vertex.getX(), vertex.getY());
                     }
                     s.endShape(s.CLOSE);
-                    */
                 }
             }
         }
