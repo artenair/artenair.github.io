@@ -45,11 +45,9 @@ export default class Boid {
     }
 
     getSkeleton() {
-        const {x,y} = this.getPosition();
-
         return new RegularPolygon(
             this.sides,
-            new Point(x, y),
+            this.position,
             this.radius,
             this.speed.heading()
         );

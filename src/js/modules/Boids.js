@@ -13,7 +13,7 @@ export default class Boids {
         const width = Math.floor(parent.clientWidth);
         const height = Math.floor(parent.clientHeight);
         const boids = [];
-        const personalSpace = 50;
+        const personalSpace = 100;
         const populationSize = 150;
 
         const sketch = (s) => {
@@ -38,7 +38,7 @@ export default class Boids {
 
             s.draw = () => {
                 s.background(50);
-                s.fill(255);
+
 
                 const quadTree = new QuadMap(new Point(0,0), s.width, s.height, 4);
                 boids.forEach( boid => {
@@ -58,7 +58,14 @@ export default class Boids {
                             return nearestVertex.getDistance(circleCenter) <= searchCircle.getRadius();
                         }
                     );
-                    boid.flock(neighbours).move();
+
+                    boid
+                        .flock(neighbours)
+                        .move();
+
+                    s.noFill();
+                    s.strokeWeight(1);
+                    s.stroke(255,150);
                     s.beginShape();
                     for(let vertex of boid.getSkeleton()) {
                         s.vertex(vertex.getX(), vertex.getY());

@@ -22,14 +22,18 @@ export default class RegularPolygon {
         }
     }
 
+    getCenter() {
+        return this._center;
+    }
+
     getVertices() {
-        return this._vertices.values();
+        return this._vertices.map( vertex => vertex);
     }
 
     getClosestCornerTo(point) {
         return this._vertices.reduce( (nearestVertex, vertex) => {
             if(!nearestVertex) return vertex;
-            return vertex.getDistance(point) < nearestVertex.getDistance(point) ? vertex : nearestVertex;
+            return vertex.getSquaredDistance(point) < nearestVertex.getSquaredDistance(point) ? vertex : nearestVertex;
         }, null);
     }
 
